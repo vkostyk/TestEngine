@@ -1,4 +1,4 @@
-package vk.testeng;
+package vk.testeng.model;
 
 public class User {
     public enum AccessType {USER, ADMIN};

@@ -43,6 +43,11 @@
         input[type=button].add-option {
             width: 200px;
         }
+
+
+        .draggable {
+            cursor: pointer;
+        }
     </style>
     <script>
 		var questionType = {ONEOPTION:1, FEWOPTIONS:2, MATCHING:3, INPUT:4, ESSAY:5};
@@ -63,9 +68,9 @@
 		{
 			document.getElementById("options").innerHTML = "";
 			var index = document.getElementById("questionType").selectedIndex;
-			switch(index)
+			switch(++index)
 			{
-				case 0:
+				case questionType.ONEOPTION:
 					for (var i = 0; i<3; i++)
                     {
 						var container = document.createElement("div");
@@ -73,26 +78,63 @@
 						document.getElementById("options").appendChild(container);
 						var selector = document.createElement("input");
 						selector.setAttribute("type", "radio");
+						selector.setAttribute("name", "option");
+						selector.setAttribute("id", "option"+i)
 						document.getElementById("options"+i).appendChild(selector);
 						var optionInput = document.createElement("input");
 						optionInput.setAttribute("type", "text");
 						optionInput.setAttribute("id", "optionInput"+i);
 						document.getElementById("options"+i).appendChild(optionInput);
                     }
+                    document.getElementById("option0").checked = true;
 					break;
-				case 1:
+				case questionType.FEWOPTIONS:
+                    for (var i = 0; i<3; i++) {
+                        var container = document.createElement("div");
+                        container.setAttribute("id", "options" + i);
+                        document.getElementById("options").appendChild(container);
+                        var selector = document.createElement("input");
+                        selector.setAttribute("type", "checkbox");
+                        selector.setAttribute("name", "option");
+                        selector.setAttribute("id", "option" + i)
+                        document.getElementById("options" + i).appendChild(selector);
+                        var optionInput = document.createElement("input");
+                        optionInput.setAttribute("type", "text");
+                        optionInput.setAttribute("id", "optionInput" + i);
+                        document.getElementById("options" + i).appendChild(optionInput);
+                    }
+                    document.getElementById("option0").checked = true;
+					break;
+                case questionType.MATCHING:
+                    for (var i = 0; i<3; i++)
+                    {
+                        var container = document.createElement("div");
+                        container.setAttribute("id", "options" + i);
+                        document.getElementById("options").appendChild(container);
 
-					break;
-                case 2:
+                        var optionLeft = document.createElement("input");
+                        optionLeft.setAttribute("type", "text");
+                        optionLeft.setAttribute("id", "optionLeft" + i);
+                        document.getElementById("options" + i).appendChild(optionLeft);
 
-					break;
-				case 3:
+                        document.getElementById("options" + i).innerHTML+="=&gt;";
 
+                        var optionRight = document.createElement("input");
+                        optionRight.setAttribute("type", "text");
+                        optionRight.setAttribute("id", "optionRight" + i);
+                        document.getElementById("options" + i).appendChild(optionRight);
+                    }
 					break;
-				case 4:
-
-					break;
-				case 5:
+				case questionType.INPUT:
+                    var container = document.createElement("div");
+                    container.setAttribute("id", "options0");
+                    document.getElementById("options").appendChild(container);
+                    var optionInput = document.createElement("input");
+                    optionInput.setAttribute("type", "text");
+                    optionInput.setAttribute("id", "optionInput0");
+                    document.getElementById("options0").appendChild(optionInput);
+                    break;
+				case questionType.ESSAY:
 
 					break;
 			}

@@ -1,6 +1,6 @@
-package vk.testeng;
-
+package vk.testeng.model;
 import com.google.gson.*;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 

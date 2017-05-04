@@ -1,4 +1,4 @@
-package vk.testeng;
+package vk.testeng.model;
 
 public class LoginSession {
     private User currentUser;
