@@ -3,6 +3,7 @@ package vk.testeng.model;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import vk.testeng.service.*;
 
 import java.io.*;
 import java.nio.file.Files;

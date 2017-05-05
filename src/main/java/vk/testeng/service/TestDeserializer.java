@@ -1,6 +1,8 @@
-package vk.testeng.model;
+package vk.testeng.service;
 
 import com.google.gson.*;
+import vk.testeng.model.Question;
+import vk.testeng.model.Test;
 
 import java.lang.reflect.Type;
 import java.util.Map;

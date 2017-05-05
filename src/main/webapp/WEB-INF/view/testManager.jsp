@@ -1,3 +1,4 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
     <title>TestEng</title>
@@ -150,17 +151,31 @@
 			}
 			document.getElementById("questionType").options[0].selected = true;
 		}
+
+		function loadQuestion() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("task").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("POST", "TestDBServlet", true);
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("name=test&password=hello");
+
+
+        }
     </script>
 </head>
 <body onLoad="setOptions()">
     <div class="flex-container">
-        <textarea class="question">Enter question text here</textarea>
+        <textarea class="question" id="task">Enter question text here</textarea>
 
         <select id="questionType" class="question-type" onchange="displayOptions()">
 
         </select>
 
-        <input type="button" value="&lt;&lt;Previous" class="lister">
+        <input type="button" value="&lt;&lt;Previous" class="lister" onclick="loadQuestion()">
         <input type="button" value="Next&gt;&gt;" class="lister">
         <label for="maxPoints" class="points">Max points:</label>
         <input type="text" value="10" id="maxPoints" class="points">

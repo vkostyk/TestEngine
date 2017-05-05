@@ -1,5 +1,9 @@
-package vk.testeng.model;
+package vk.testeng.service;
 import com.google.gson.*;
+import vk.testeng.model.FewOptionsAnswer;
+import vk.testeng.model.MatchingAnswer;
+import vk.testeng.model.OneOptionAnswer;
+import vk.testeng.model.Question;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -47,7 +51,7 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
                 {
                     answersInt.add(answer.getAsInt());
                 }
-                question.setCorrectAnswer(new FewOptionsAnswer(answersInt));
+                question.setCorrectAnswer(new MatchingAnswer(answersInt));
                 break;
         }
         return question;

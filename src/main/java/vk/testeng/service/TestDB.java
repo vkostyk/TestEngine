@@ -1,4 +1,6 @@
-package vk.testeng.model;
+package vk.testeng.service;
+
+import vk.testeng.model.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -8,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
@@ -177,7 +180,7 @@ public class TestDB {
         }
     }
 
-    private void setOneOption(int questionId, Connection c, Question question)
+    private void addOneOption(int questionId, Connection c, Question question)
     {
         int correctAnswer = ((OneOptionAnswer)question.getCorrectAnswer()).getAnswer();
         ArrayList<String> options = question.getOptions();
@@ -200,7 +203,7 @@ public class TestDB {
             }
         }
     }
-    private void setFewOptions(int questionId, Connection c, Question question)
+    private void addFewOptions(int questionId, Connection c, Question question)
     {
         ArrayList<Integer> fewCorrectAnswers =  ((FewOptionsAnswer)question.getCorrectAnswer()).getAnswer();
         ArrayList<String> options = question.getOptions();
@@ -224,7 +227,7 @@ public class TestDB {
         }
     }
 
-    private void setMatching(int questionId, Connection c, Question question)
+    private void addMatching(int questionId, Connection c, Question question)
     {
         PreparedStatement ps = null;
         ArrayList<Integer> matchingCorrectAnswer = ((MatchingAnswer)question.getCorrectAnswer()).getAnswer();
@@ -263,12 +266,12 @@ public class TestDB {
             }
         }
     }
-    private void setInput(int questionId, Connection c, Question question)
+    private void addInput(int questionId, Connection c, Question question)
     {
         PreparedStatement ps = null;
         String answer = ((InputAnswer)question.getCorrectAnswer()).getAnswer();
         try {
-            ps = c.prepareStatement("INSERT INTO options(question_id, option, is_correct) VALUES(?,?,?)");
+            ps = c.prepareStatement("INSERT INTO options(question_id, option, is_correct) VALUES(?,?,?);");
             ps.setInt(1,questionId);
             ps.setString(2,answer);
             ps.setBoolean(3,true);
@@ -298,45 +301,14 @@ public class TestDB {
             ResultSet rs = stmt.executeQuery("SELECT * FROM tests WHERE id="+id+";");
             rs.next();
             test.setMaxPoints(rs.getInt("points"));
-            rs = stmt.executeQuery("SELECT * FROM questions WHERE test_id="+id+" ORDER BY id;");
+            rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+id+" ORDER BY id;");
 
             while (rs.next())
             {
-                Question question = new Question();
+                Question question;
                 int questionId = rs.getInt("id");
-                question.setId(questionId);
-                Question.AnswerType type = Question.AnswerType.valueOf(rs.getString("type"));
-                question.setType(type);
-                question.setTask(rs.getString("task"));
-                question.setMaxPoints(rs.getInt("maxpoints"));
-                ResultSet queryResultSet = null;
-                ArrayList<String> options = null;
-                ArrayList<Integer> answers;
-                int counter;
-
-                switch(type)
-                {
-                    case ONEOPTION:
-                        getOneOption(questionId, c, question);
-                        break;
-                    case FEWOPTIONS:
-                        getFewOptions(questionId, c, question);
-                        break;
-                    case MATCHING:
-                        getMatching(questionId, c, question);
-                        break;
-                    case INPUT:
-                        getInput(questionId, c, question);
-                        break;
-                    case ESSAY:
-                        //nothing to load
-
-                        break;
-                }
-                try {queryResultSet.close();} catch (Exception x) {System.err.println("Something gone wrong: perhaps no answer from DB;");}
-                question.setOptions(options);
+                question = getQuestion(questionId);
                 test.addQuestion(question);
-
             }
 
             rs.close();
@@ -366,31 +338,10 @@ public class TestDB {
             for (int i = 0; i<test.getQuestionsCount(); i++)
             {
                 Question question = test.getQuestion(i);
-                Question.AnswerType questionType = question.getType();
 
-                rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES("+testId+", "+question.getTask()+", "+questionType.name()+", "+question.getMaxPoints()+") RETURNING id;");
-                rs.next();
-                int questionId = rs.getInt("id");
-                //PreparedStatement ps;
-                //ArrayList<String> options = question.getOptions();
-                switch (questionType)
-                {
-                    case ONEOPTION:
-                        setOneOption(questionId, c, question);
-                        break;
-                    case FEWOPTIONS:
-                        setFewOptions(questionId, c, question);
-                        break;
-                    case MATCHING:
-                        setMatching(questionId, c, question);
-                        break;
-                    case INPUT:
-                        setInput(questionId, c, question);
-                        break;
-                    case ESSAY:
-                        //nothing to add
-                        break;
-                }
+                addQuestion(question, testId);
+
+
 
             }
             stmt.close();
@@ -402,6 +353,42 @@ public class TestDB {
         }
         System.out.println("Records created successfully");
     }
+    private void addQuestion(Question question, int testId)
+    {
+        Question.AnswerType questionType = question.getType();
+        Connection c = null;
+        Statement stmt = null;
+
+        try {
+            c = connect();
+            stmt = c.createStatement();
+            ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", " + question.getTask() + ", " + questionType.name() + ", " + question.getMaxPoints() + ") RETURNING id;");
+            rs.next();
+            int questionId = rs.getInt("id");
+            //PreparedStatement ps;
+            //ArrayList<String> options = question.getOptions();
+            switch (questionType) {
+                case ONEOPTION:
+                    addOneOption(questionId, c, question);
+                    break;
+                case FEWOPTIONS:
+                    addFewOptions(questionId, c, question);
+                    break;
+                case MATCHING:
+                    addMatching(questionId, c, question);
+                    break;
+                case INPUT:
+                    addInput(questionId, c, question);
+                    break;
+                case ESSAY:
+                    //nothing to add
+                    break;
+            }
+        } catch (Exception e)
+        {
+
+        }
+    }
     private Question getQuestion(int questionId)
     {
         Connection c = null;
@@ -410,6 +397,7 @@ public class TestDB {
         try
         {
             c = connect();
+            stmt = c.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM questions WHERE id="+questionId+";");
             rs.next();
 
@@ -448,24 +436,157 @@ public class TestDB {
         }
         return question;
     }
-    private void editQuestion(int questionId, int testId, Question newQuestion)
-    {
+
+    //if exists, update insteadof insert
+    private void editQuestion(int questionId, int testId, Question newQuestion) {
         Connection c = null;
         Statement stmt = null;
 
         Question original = getQuestion(questionId);
-        /*if (original.getType()!=)
-
-            try
-            {
+        if ((original.getType() == newQuestion.getType()&&(original.getOptions().size()==newQuestion.getOptions().size()))) {
+            try {
                 c = connect();
                 stmt = c.createStatement();
-                ResultSet rs = stmt.executeQuery();
+                stmt.executeUpdate("UPDATE questions SET test_id="+testId+", task="+newQuestion.getTask()+", type="+newQuestion.getType()+", max_points="+newQuestion.getMaxPoints()+";");
 
 
-            } catch (Exception e)
-            {
+                switch(original.getType())
+                {
+                    case ONEOPTION:
+                        editOneOption(questionId, c, newQuestion);
+                        break;
+                    case FEWOPTIONS:
+                        editFewOptions(questionId, c, newQuestion);
+                        break;
+                    case MATCHING:
+                        editMatching(questionId, c, newQuestion);
+                        break;
+                    case INPUT:
+                        editInput(questionId, c, newQuestion);
+                        break;
+                    case ESSAY:
 
-            }*/
+                        break;
+                }
+
+
+            } catch (Exception e) {
+
+            }
+        } else {
+            //error
+        }
+
+
     }
+    private void editOneOption(int questionId, Connection c, Question question)
+    {
+        PreparedStatement ps = null;
+        int correctAnswer = ((OneOptionAnswer)question.getCorrectAnswer()).getAnswer();
+        ArrayList<String> options = question.getOptions();
+        try {
+            for (int j = 0; j<question.getOptions().size(); j++)
+            {
+                ps = c.prepareStatement("UPDATE options SET option=?, is_correct=? WHERE question_id = ?;");
+                ps.setString(1, options.get(j));
+                ps.setBoolean(2, (j == correctAnswer));
+                ps.setInt(3, questionId);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+
+        } finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
+        }
+    }
+
+    private void editFewOptions(int questionId, Connection c, Question question)
+    {
+        ArrayList<Integer> fewCorrectAnswers =  ((FewOptionsAnswer)question.getCorrectAnswer()).getAnswer();
+        ArrayList<String> options = question.getOptions();
+        PreparedStatement ps = null;
+        try {
+            for (int j = 0; j<options.size(); j++)
+            {
+                ps = c.prepareStatement("UPDATE options SET option=?, is_correct=? WHERE question_id=?;");
+                ps.setString(1, options.get(j));
+                ps.setBoolean(2,fewCorrectAnswers.contains(j));
+                ps.setInt(3,questionId);
+                ps.executeUpdate();
+
+            }
+        } catch (Exception e) {
+
+        } finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
+        }
+    }
+
+    private void editMatching(int questionId, Connection c, Question question)
+    {
+        PreparedStatement ps = null;
+        ArrayList<Integer> matchingCorrectAnswer = ((MatchingAnswer)question.getCorrectAnswer()).getAnswer();
+        ArrayList<String> options = question.getOptions();
+        try {
+            for (int j = 0; j<options.size()/2;j++)
+            {
+                ps = c.prepareStatement("SELECT * FROM matching WHERE question_id=? ORDER BY id;");
+                ps.setInt(1, questionId);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                int leftId = rs.getInt("id");
+                rs.next();
+                int rightId = rs.getInt("id");
+
+
+                ps = c.prepareStatement("UPDATE matching SET option=? WHERE question_id=? AND id=?;");
+                ps.setString(1, options.get(j));
+                ps.setInt(2, questionId);
+                ps.setInt(3, leftId);
+
+                ps.executeUpdate();
+
+                ps = c.prepareStatement("UPDATE matching SET option=? WHERE question_id=? AND id=?;");
+                ps.setInt(2, questionId);
+                ps.setString(1, options.get(matchingCorrectAnswer.get(j)+options.size()/2));
+                ps.setInt(3, rightId);
+
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+
+        } finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
+        }
+    }
+
+    private void editInput(int questionId, Connection c, Question question)
+    {
+        PreparedStatement ps = null;
+        String answer = ((InputAnswer)question.getCorrectAnswer()).getAnswer();
+        try {
+            ps = c.prepareStatement("UPDATE options SET option=?, is_correct=? WHERE question_id=?;");
+            ps.setString(1,answer);
+            ps.setBoolean(2,true);
+            ps.setInt(3,questionId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+
+        } finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
+        }
+    }
+
 }

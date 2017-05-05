@@ -1,6 +1,10 @@
-package vk.testeng.model;
+package vk.testeng.service;
 
 import com.google.gson.*;
+import vk.testeng.model.FewOptionsAnswer;
+import vk.testeng.model.MatchingAnswer;
+import vk.testeng.model.OneOptionAnswer;
+import vk.testeng.model.Question;
 
 
 import java.lang.reflect.Type;
