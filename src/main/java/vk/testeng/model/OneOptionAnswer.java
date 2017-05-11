@@ -3,10 +3,6 @@ package vk.testeng.model;
 public class OneOptionAnswer extends AbstractAnswer
 {
     private int answer;
-    public OneOptionAnswer()
-    {
-        answer = -1;
-    }
     public OneOptionAnswer(int answer)
     {
         this.answer = answer;

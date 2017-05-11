@@ -1,44 +1,44 @@
 package vk.testeng.model;
 
 public class User {
-    public enum AccessType {USER, ADMIN};
-    private static int ids = 0;
+    public enum AccessType {USER, ADMIN}
     private int id;
-    private String userName;
+    private String username;
     private String password;
     private AccessType accessType;
-    public User()
+    public User(String username, String password, AccessType accessType)
     {
-        this(null, null, AccessType.USER);
-        ids++;
-    }
-    public User(String userName, String password, AccessType accessType)
-    {
-        this.userName = userName;
+        this.username = username;
         this.password = password;
-        this.id = ids;
         this.accessType = accessType;
     }
-    public String getUserName()
+
+    public User(String username, String password)
     {
-        return this.userName;
+
+        this.username = username;
+        this.password = password;
     }
 
-    public void setUserName(String userName)
+    public void setUsername(String username)
     {
-        this.userName = userName;
+        this.username = this.username;
     }
-
-    public String getPassword()
-    {
-        return this.password;
-    }
-
     public void setPassword(String password)
     {
         this.password = password;
     }
+    public void setAccessType(AccessType accessType) {this.accessType = accessType;}
+    public void setId (int id) {this.id = id;}
 
+    public String getUsername()
+    {
+        return this.username;
+    }
+    public String getPassword()
+    {
+        return this.password;
+    }
     public AccessType getAccessType()
     {
         return this.accessType;
@@ -47,11 +47,5 @@ public class User {
     {
         return this.id;
     }
-    public int getUsersCount()
-    {
-        return ids;
-    }
+
 }
-
-
-/////user id to be

@@ -2,49 +2,16 @@ package vk.testeng.service;
 
 import vk.testeng.model.*;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
 
 public class TestDB {
-    private Connection connect()
-    {
-        Connection c = null;
-        try {
-            Path file = Paths.get("/DB.cre");
-            String line = null;
-            ArrayList<String> data = new ArrayList<String>();
-            try (InputStream in = Files.newInputStream(file);
-                 BufferedReader reader =
-                         new BufferedReader(new InputStreamReader(in))) {
-                while ((line = reader.readLine()) != null) {
-                    data.add(line);
-                }
-            } catch (Exception e) {
-                System.err.println(e.getClass().getName() + ": " + e.getMessage());
-                System.exit(0);
-            }
-
-            Class.forName("org.postgresql.Driver");
-            c = DriverManager
-                    .getConnection("jdbc:postgresql://"+data.get(0)+"/"+data.get(1),
-                            data.get(2), data.get(3));
-
-        } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
-            System.exit(0);
-        }
-        return c;
-    }
 
     private void getOneOption(int questionId, Connection c, Question question)
     {
@@ -292,7 +259,7 @@ public class TestDB {
         Connection c = null;
         Statement stmt = null;
         try {
-            c = connect();
+            c = ConnectionManager.connect();
             //c.setAutoCommit(false);
             System.out.println("Opened database successfully");
 
@@ -328,7 +295,7 @@ public class TestDB {
         Statement stmt = null;
         try {
             //c.setAutoCommit(false);
-            c = connect();
+            c = ConnectionManager.connect();
             System.out.println("Opened database successfully");
             stmt = c.createStatement();
             ResultSet rs;
@@ -360,7 +327,7 @@ public class TestDB {
         Statement stmt = null;
 
         try {
-            c = connect();
+            c = ConnectionManager.connect();
             stmt = c.createStatement();
             ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", " + question.getTask() + ", " + questionType.name() + ", " + question.getMaxPoints() + ") RETURNING id;");
             rs.next();
@@ -396,7 +363,7 @@ public class TestDB {
         Question question = new Question();
         try
         {
-            c = connect();
+            c = ConnectionManager.connect();
             stmt = c.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM questions WHERE id="+questionId+";");
             rs.next();
@@ -445,7 +412,7 @@ public class TestDB {
         Question original = getQuestion(questionId);
         if ((original.getType() == newQuestion.getType()&&(original.getOptions().size()==newQuestion.getOptions().size()))) {
             try {
-                c = connect();
+                c = ConnectionManager.connect();
                 stmt = c.createStatement();
                 stmt.executeUpdate("UPDATE questions SET test_id="+testId+", task="+newQuestion.getTask()+", type="+newQuestion.getType()+", max_points="+newQuestion.getMaxPoints()+";");
 

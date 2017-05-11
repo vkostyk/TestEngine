@@ -16,7 +16,7 @@
         <script>
             function doLogin()
             {
-                alert("login");
+               // document.getElementById()
             }
             function register()
             {
@@ -24,21 +24,27 @@
             }
             function doRegister()
             {
+                document.getElementById("action").setAttribute("value", "register");
+
                 document.getElementById("registerButton").setAttribute("type", "password");
                 document.getElementById("registerButton").setAttribute("value", "");
+
                 document.getElementById("loginButton").setAttribute("value", "Retype password and submit");
-                document.getElementById("loginButton").setAttribute("onclick", "register()");
             }
 
         </script>
     </head>
-    <body>
+    <body><form action="LoginServlet" method="post" id="main">
     <div class="flex-container">
-        <input type="text" value="username" id="username" class="element">
-        <input type="password" value="password" id="password" class="element">
-        <input type="button" value="Login" onclick="doLogin()" id="loginButton" class="element">
+
+        <input type="text" value="username" id="username" name="username" class="element">
+        <input type="password" value="password" id="password" name="password" class="element">
+
+        <input type="submit" value="Login" id="loginButton" class="element">
         <input type="button" value="Register new" onclick="doRegister()" id="registerButton" class="element">
 
-    </div>
+        <input type="hidden" id="action" name="action" value="login">
+
+    </div></form>
     </body>
 </html>

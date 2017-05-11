@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import vk.testeng.service.*;
 
-import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,10 +55,9 @@ public class Test {
 
     }
 
-    public void  addToDB()
+    public void addToDB()
     {
         TestDB testDB = new TestDB();
-        maxPoints = 200;
         testDB.addTest(this);
     }
 

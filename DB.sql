@@ -1,4 +1,5 @@
 CREATE TYPE question_type AS ENUM ('ONEOPTION', 'FEWOPTIONS', 'MATCHING', 'INPUT', 'ESSAY');
+CREATE TYPE roles AS ENUM ('USER', 'ADMIN');
 
 
 CREATE TABLE tests(
@@ -53,4 +54,12 @@ CREATE TABLE matching_answers(
   user_id     integer NOT NULL,
   key_id      integer NOT NULL,
   pair_id     integer NOT NULL
+);
+
+
+CREATE TABLE users (
+  id       integer PRIMARY KEY NOT NULL,
+  name     text,
+  password TEXT,
+  access roles
 );

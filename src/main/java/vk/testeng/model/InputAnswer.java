@@ -7,10 +7,12 @@ public class InputAnswer extends AbstractAnswer
     {
         this.answer = answer;
     }
+    public void setAnswer(String answer) {this.answer = answer.trim();}
     public double check(AbstractAnswer obj)
     {
-        //regexp
-        return 1.0;
+
+        InputAnswer option = (InputAnswer)obj;
+        if (option.getAnswer().trim().toLowerCase()==this.answer.toLowerCase()) {return 1.0;} else {return 0;}
     }
     public String getAnswer()
     {
