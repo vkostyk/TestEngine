@@ -28,12 +28,11 @@ public class HomeServlet extends HttpServlet {
                 } else {dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/404.jsp");}
                 break;
             case "login":
-
                 dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/login.jsp");
                 break;
             case "logout":
-
-                dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/home.jsp");
+                request.setAttribute("action", "logout");
+                dispatcher = this.getServletContext().getRequestDispatcher("/login");
                 break;
             default:
                 dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/404.jsp");

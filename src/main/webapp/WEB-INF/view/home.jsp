@@ -9,6 +9,7 @@
 
     </c:if>
     <a href="./?page=login">Login</a>
+    <a href="./?page=logout">Logout</a>
     <a href="./?page=testManager">Test Manager</a>
     <a href="./?page=home">Home</a>
   </body>

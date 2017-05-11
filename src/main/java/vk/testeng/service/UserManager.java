@@ -57,14 +57,19 @@ public class UserManager {
                 return new LoginResult(LoginState.NOSUCHUSER, -1);
             }
             int userId = rs.getInt("id");
-            if (rs.getString("password")!=user.getPassword())
+            System.out.println("rs.getInt passed");
+            String password = rs.getString("password");
+            if (!  password.equals(user.getPassword()))
             {
+                System.out.println(rs.getString("password")+"!="+user.getPassword());
                 return new LoginResult(LoginState.WRONGPASSWORD, userId);
             }
-            return  new LoginResult((rs.getString("access")=="ADMIN"?LoginState.ISADMIN:LoginState.ISUSER), rs.getInt(userId));
+            String access = rs.getString("access");
+            return  new LoginResult((access.equals("ADMIN")?LoginState.ISADMIN:LoginState.ISUSER), userId);
 
 
         } catch (Exception e){
+
             throw new RuntimeException("DB interaction failed on users table");
         }
     }
@@ -75,20 +80,21 @@ public class UserManager {
         Statement stmt = null;
         try {
             c = ConnectionManager.connect();
-            System.out.println("connect passed");
             stmt = c.createStatement();
-
+            System.out.println(user.getUsername());
             ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE name='"+user.getUsername()+"';");
             boolean userExists = rs.next();
             if (userExists)
             {
                 return new RegResult(RegState.USEREXISTS, rs.getInt("id"));
+
             } else {
                 rs = stmt.executeQuery("INSERT INTO users(name, password, access) VALUES('"+user.getUsername()+"', '"+user.getPassword()+"', '"+user.getAccessType().name()+"') RETURNING id;");
+                rs.next();
                 return new RegResult(RegState.SUCCESS, rs.getInt("id"));
             }
         } catch (Exception e){
-            throw new RuntimeException("DB interaction failed on users table");
+            throw new RuntimeException(e);
         }
     }
 
