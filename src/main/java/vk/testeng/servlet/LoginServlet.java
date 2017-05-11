@@ -89,23 +89,33 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String access = request.getParameter("access");
-        User.AccessType accessType = User.AccessType.valueOf(access);
-        if ((username==null||password==null||username.length()<5||password.length()<5)||!(accessType==User.AccessType.ADMIN||accessType== User.AccessType.USER))
+        User.AccessType accessType;
+        if ((username==null||password==null||username.length()<5||password.length()<5)) //||!(accessType==User.AccessType.ADMIN||accessType== User.AccessType.USER)
         {
-
             request.setAttribute("state", "wrongcredentials");
             request.getRequestDispatcher("./view/regFailure.jsp").forward(request, response);
         } else {
-            User user = new User(username, password, User.AccessType.valueOf(access));
+            if (access==null) {
+                accessType = User.AccessType.USER;
+            } else {
+                if (!(access=="USER"||access== "ADMIN"))
+                {
+                    accessType = User.AccessType.USER;
+                } else {
+                    accessType=User.AccessType.valueOf(access);
+                }
+            }
+            User user = new User(username, password, accessType);
             UserManager userManager = new UserManager();
             UserManager.RegResult result = userManager.register(user);
             switch (result.getState())
             {
                 case USEREXISTS:
-
+                    request.setAttribute("state", "userexists");
+                    request.getRequestDispatcher("./view/regFailure.jsp").forward(request, response);
                     break;
                 case SUCCESS:
-
+                    request.getRequestDispatcher("./view/regSuccess.jsp").forward(request, response);
                     break;
             }
         }

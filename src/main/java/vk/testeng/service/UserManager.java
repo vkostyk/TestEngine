@@ -75,7 +75,9 @@ public class UserManager {
         Statement stmt = null;
         try {
             c = ConnectionManager.connect();
+            System.out.println("connect passed");
             stmt = c.createStatement();
+
             ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE name='"+user.getUsername()+"';");
             boolean userExists = rs.next();
             if (userExists)

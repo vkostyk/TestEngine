@@ -28,11 +28,11 @@ public class HomeServlet extends HttpServlet {
                 } else {dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/404.jsp");}
                 break;
             case "login":
-                login(request, response);
-                dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/home.jsp");
+
+                dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/login.jsp");
                 break;
             case "logout":
-                logout(request, response);
+
                 dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/home.jsp");
                 break;
             default:
@@ -43,28 +43,7 @@ public class HomeServlet extends HttpServlet {
         dispatcher.forward(request, response);
 
     }
-    private void logout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-        HttpSession session=request.getSession();
-        session.invalidate();
-    }
-    private void login(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
 
-        String name=request.getParameter("name");
-        String password=request.getParameter("password");
-
-        if(password.equals("admin123")){
-
-            HttpSession session=request.getSession();
-            session.setAttribute("name",name);
-        }
-        else {
-
-
-        }
-
-    }
 }
 
 

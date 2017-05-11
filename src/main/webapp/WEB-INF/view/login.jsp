@@ -34,7 +34,7 @@
 
         </script>
     </head>
-    <body><form action="LoginServlet" method="post" id="main">
+    <body><form action="login" method="post" id="main">
     <div class="flex-container">
 
         <input type="text" value="username" id="username" name="username" class="element">

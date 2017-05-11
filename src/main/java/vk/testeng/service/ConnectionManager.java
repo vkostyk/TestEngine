@@ -16,7 +16,9 @@ public class ConnectionManager {
     {
         Connection c = null;
         try {
-            Path file = Paths.get("/DB.cre");
+            System.out.println("Working Directory = " +
+                    System.getProperty("user.dir"));
+            Path file = Paths.get("C:/Users/vkostyk/Desktop/4/TestEngine/DB.cre");
             String line = null;
             ArrayList<String> data = new ArrayList<String>();
             try (InputStream in = Files.newInputStream(file);
