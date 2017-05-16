@@ -7,10 +7,10 @@ public class EssayAnswer extends AbstractAnswer
     {
         this.answer = answer;
     }
-
+    public EssayAnswer() {}
     public double check(AbstractAnswer obj) {
         EssayAnswer option = (EssayAnswer)obj;
-        if (obj!=null) {return 0;} else {return -1;}
+        if (option!=null) {return 0;} else {return -1;}
     }
     public String getAnswer()
     {

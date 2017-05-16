@@ -4,6 +4,8 @@
         <title>Login</title>
         <style>
             .flex-container{
+                padding: 70px 0;
+                margin:auto;
                 display: flex;
                 justify-content: space-between;
                 width: 400px;
@@ -34,7 +36,9 @@
 
         </script>
     </head>
-    <body><form action="login" method="post" id="main">
+    <body>
+    <center>
+    <form action="login" method="post" id="main">
     <div class="flex-container">
 
         <input type="text" value="username" id="username" name="username" class="element">
@@ -45,6 +49,6 @@
 
         <input type="hidden" id="action" name="action" value="login">
 
-    </div></form>
+    </div></form></center>
     </body>
 </html>

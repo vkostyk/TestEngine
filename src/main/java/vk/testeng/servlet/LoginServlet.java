@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet {
         String action = (String)request.getAttribute("action");
         if (action=="logout") {logout(request, response);}
     }
-    private void login(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException
+    private void login(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -103,15 +103,10 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("state", "Wrong credentials, username and password should have at least 5 characters");
             request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
         } else {
-            if (access==null) {
+            if (access==null||!(access.equals("USER")||access.equals("ADMIN"))) {
                 accessType = User.AccessType.USER;
             } else {
-                if (!(access=="USER"||access== "ADMIN"))
-                {
-                    accessType = User.AccessType.USER;
-                } else {
-                    accessType=User.AccessType.valueOf(access);
-                }
+                accessType=User.AccessType.valueOf(access);
             }
             User user = new User(username, password, accessType);
             UserManager userManager = new UserManager();
@@ -134,7 +129,6 @@ public class LoginServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session!=null && session.getAttribute("currentSessionUser")!=null)
         {
-
             session.removeAttribute("currentSessionUser");
             session.invalidate();
             request.setAttribute("state", "Successfully logged out");

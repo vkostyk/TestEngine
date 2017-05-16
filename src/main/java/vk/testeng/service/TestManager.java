@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Random;
 
 
-public class TestDB {
+public class TestManager {
 
     private void getOneOption(int questionId, Connection c, Question question)
     {
@@ -289,7 +289,7 @@ public class TestDB {
         System.out.println("Operation done successfully");
         return test;
     }
-    public void addTest(Test test)
+    public int addTest(Test test)
     {
         Connection c = null;
         Statement stmt = null;
@@ -306,7 +306,7 @@ public class TestDB {
             {
                 Question question = test.getQuestion(i);
 
-                addQuestion(question, testId);
+                addQuestion(testId, question);
 
 
 
@@ -314,13 +314,14 @@ public class TestDB {
             stmt.close();
             //c.commit();
             c.close();
+            return testId;
         } catch (Exception e) {
             System.err.println( e.getClass().getName()+": "+ e.getMessage() );
             System.exit(0);
+            return -1;
         }
-        System.out.println("Records created successfully");
     }
-    private void addQuestion(Question question, int testId)
+    public int addQuestion(int testId, Question question)
     {
         Question.AnswerType questionType = question.getType();
         Connection c = null;
@@ -351,12 +352,13 @@ public class TestDB {
                     //nothing to add
                     break;
             }
+            return questionId;
         } catch (Exception e)
         {
-
+            return -1;
         }
     }
-    private Question getQuestion(int questionId)
+    public Question getQuestion(int questionId)
     {
         Connection c = null;
         Statement stmt = null;
@@ -405,11 +407,12 @@ public class TestDB {
     }
 
     //if exists, update insteadof insert
-    private void editQuestion(int questionId, int testId, Question newQuestion) {
+    //newQuestion must contain valid question id in its field [id] corresponding to id in DB
+    public void editQuestion(int testId, Question newQuestion) {
         Connection c = null;
         Statement stmt = null;
 
-        Question original = getQuestion(questionId);
+        Question original = getQuestion(newQuestion.getId());
         if ((original.getType() == newQuestion.getType()&&(original.getOptions().size()==newQuestion.getOptions().size()))) {
             try {
                 c = ConnectionManager.connect();
@@ -420,16 +423,16 @@ public class TestDB {
                 switch(original.getType())
                 {
                     case ONEOPTION:
-                        editOneOption(questionId, c, newQuestion);
+                        editOneOption(c, newQuestion);
                         break;
                     case FEWOPTIONS:
-                        editFewOptions(questionId, c, newQuestion);
+                        editFewOptions(c, newQuestion);
                         break;
                     case MATCHING:
-                        editMatching(questionId, c, newQuestion);
+                        editMatching(c, newQuestion);
                         break;
                     case INPUT:
-                        editInput(questionId, c, newQuestion);
+                        editInput(c, newQuestion);
                         break;
                     case ESSAY:
 
@@ -446,7 +449,7 @@ public class TestDB {
 
 
     }
-    private void editOneOption(int questionId, Connection c, Question question)
+    private void editOneOption(Connection c, Question question)
     {
         PreparedStatement ps = null;
         int correctAnswer = ((OneOptionAnswer)question.getCorrectAnswer()).getAnswer();
@@ -457,7 +460,7 @@ public class TestDB {
                 ps = c.prepareStatement("UPDATE options SET option=?, is_correct=? WHERE question_id = ?;");
                 ps.setString(1, options.get(j));
                 ps.setBoolean(2, (j == correctAnswer));
-                ps.setInt(3, questionId);
+                ps.setInt(3, question.getId());
                 ps.executeUpdate();
             }
         } catch (Exception e) {
@@ -470,7 +473,7 @@ public class TestDB {
         }
     }
 
-    private void editFewOptions(int questionId, Connection c, Question question)
+    private void editFewOptions(Connection c, Question question)
     {
         ArrayList<Integer> fewCorrectAnswers =  ((FewOptionsAnswer)question.getCorrectAnswer()).getAnswer();
         ArrayList<String> options = question.getOptions();
@@ -481,7 +484,7 @@ public class TestDB {
                 ps = c.prepareStatement("UPDATE options SET option=?, is_correct=? WHERE question_id=?;");
                 ps.setString(1, options.get(j));
                 ps.setBoolean(2,fewCorrectAnswers.contains(j));
-                ps.setInt(3,questionId);
+                ps.setInt(3,question.getId());
                 ps.executeUpdate();
 
             }
@@ -495,7 +498,7 @@ public class TestDB {
         }
     }
 
-    private void editMatching(int questionId, Connection c, Question question)
+    private void editMatching(Connection c, Question question)
     {
         PreparedStatement ps = null;
         ArrayList<Integer> matchingCorrectAnswer = ((MatchingAnswer)question.getCorrectAnswer()).getAnswer();
@@ -504,7 +507,7 @@ public class TestDB {
             for (int j = 0; j<options.size()/2;j++)
             {
                 ps = c.prepareStatement("SELECT * FROM matching WHERE question_id=? ORDER BY id;");
-                ps.setInt(1, questionId);
+                ps.setInt(1, question.getId());
                 ResultSet rs = ps.executeQuery();
                 rs.next();
                 int leftId = rs.getInt("id");
@@ -514,13 +517,13 @@ public class TestDB {
 
                 ps = c.prepareStatement("UPDATE matching SET option=? WHERE question_id=? AND id=?;");
                 ps.setString(1, options.get(j));
-                ps.setInt(2, questionId);
+                ps.setInt(2, question.getId());
                 ps.setInt(3, leftId);
 
                 ps.executeUpdate();
 
                 ps = c.prepareStatement("UPDATE matching SET option=? WHERE question_id=? AND id=?;");
-                ps.setInt(2, questionId);
+                ps.setInt(2, question.getId());
                 ps.setString(1, options.get(matchingCorrectAnswer.get(j)+options.size()/2));
                 ps.setInt(3, rightId);
 
@@ -536,7 +539,7 @@ public class TestDB {
         }
     }
 
-    private void editInput(int questionId, Connection c, Question question)
+    private void editInput(Connection c, Question question)
     {
         PreparedStatement ps = null;
         String answer = ((InputAnswer)question.getCorrectAnswer()).getAnswer();
@@ -544,7 +547,7 @@ public class TestDB {
             ps = c.prepareStatement("UPDATE options SET option=?, is_correct=? WHERE question_id=?;");
             ps.setString(1,answer);
             ps.setBoolean(2,true);
-            ps.setInt(3,questionId);
+            ps.setInt(3,question.getId());
             ps.executeUpdate();
         } catch (Exception e) {
 

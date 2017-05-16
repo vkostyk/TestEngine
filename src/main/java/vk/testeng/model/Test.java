@@ -4,6 +4,10 @@ package vk.testeng.model;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import vk.testeng.service.*;
+import vk.testeng.service.JSON.QuestionDeserializer;
+import vk.testeng.service.JSON.QuestionSerializer;
+import vk.testeng.service.JSON.TestDeserializer;
+import vk.testeng.service.JSON.TestSerializer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -20,13 +24,25 @@ public class Test {
     private int maxPoints;
     public Test()
     {
-        this(0);
+        questions = new ArrayList<>();
     }
     public Test(int id)
     {
+        this();
         this.id = id;
-        maxPoints = 0;
-        questions = new ArrayList<>();
+    }
+    public Test (int id, int maxPoints)
+    {
+        this();
+        this.id = id;
+        this.maxPoints = maxPoints;
+    }
+    public Test (int id, int maxPoints, ArrayList<Question> questions)
+    {
+        this();
+        this.id = id;
+        this.maxPoints = maxPoints;
+        this.questions = questions;
     }
     public void setId(int testId)
     {
@@ -49,8 +65,8 @@ public class Test {
 
     public Test getFromDB()
     {
-        TestDB testDB = new TestDB();
-        Test tmp = testDB.getTest(id);
+        TestManager testManager = new TestManager();
+        Test tmp = testManager.getTest(id);
         this.questions = tmp.getQuestions();
         return tmp;
 
@@ -58,8 +74,8 @@ public class Test {
 
     public void addToDB()
     {
-        TestDB testDB = new TestDB();
-        testDB.addTest(this);
+        TestManager testManager = new TestManager();
+        testManager.addTest(this);
     }
 
     public Test load(int id)

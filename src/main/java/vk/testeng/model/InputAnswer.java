@@ -12,7 +12,7 @@ public class InputAnswer extends AbstractAnswer
     {
 
         InputAnswer option = (InputAnswer)obj;
-        if (option.getAnswer().trim().toLowerCase()==this.answer.toLowerCase()) {return 1.0;} else {return 0;}
+        if (option.getAnswer().trim().toLowerCase().equals(this.answer.toLowerCase())) {return 1.0;} else {return 0;}
     }
     public String getAnswer()
     {

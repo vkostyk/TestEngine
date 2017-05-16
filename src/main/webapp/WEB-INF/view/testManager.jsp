@@ -4,12 +4,15 @@
     <title>TestEng</title>
     <style>
         .flex-container{
+            padding: 70px 0;
+            margin:auto;
             display: flex;
             justify-content: space-between;
             width: 800px;
             flex-flow: row wrap;
         }
         .flex-options {
+            padding: 20px 0;
             flex-flow: column wrap;
             display: flex;
             justify-content: space-between;
@@ -67,7 +70,7 @@
          }*/
 		function displayOptions()
 		{
-			document.getElementById("options").innerHTML = "";
+			document.getElementById("options").innerHTML = "<br>";
 			var index = document.getElementById("questionType").selectedIndex;
 			switch(++index)
 			{
@@ -136,7 +139,7 @@
                     document.getElementById("options0").appendChild(optionInput);
                     break;
 				case questionType.ESSAY:
-
+                    //document.getElementById("options").innerHTML = "";
 					break;
 			}
 		}
@@ -167,7 +170,7 @@
         }
     </script>
 </head>
-<body onLoad="setOptions()">
+<body onLoad="setOptions();displayOptions();">
     <div class="flex-container">
         <textarea class="question" id="task">Enter question text here</textarea>
 
@@ -184,10 +187,11 @@
         <label class="question-type">Choose question type</label>
         <label for="totalPoints" class="points">Total points:</label>
         <input type="text" value="10" id="totalPoints" class="points">
-    </div>
-    <div class="flex-options" id="options">
+        <div class="flex-options" id="options">
 
+        </div>
     </div>
+
 </body>
 
 </html>

@@ -19,6 +19,9 @@ public class HomeServlet extends HttpServlet {
         HttpSession session=request.getSession(false);
         switch (page)
         {
+            case "test":
+                dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/test.jsp");
+                break;
             case "home":
                 dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/home.jsp");
                 break;

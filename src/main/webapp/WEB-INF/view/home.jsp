@@ -8,6 +8,7 @@
   <c:if test="">
 
     </c:if>
+    <a href="./?page=test">test</a>
     <a href="./?page=login">Login</a>
     <a href="./?page=logout">Logout</a>
     <a href="./?page=testManager">Test Manager</a>

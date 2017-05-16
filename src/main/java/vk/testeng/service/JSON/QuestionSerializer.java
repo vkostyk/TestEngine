@@ -1,4 +1,4 @@
-package vk.testeng.service;
+package vk.testeng.service.JSON;
 
 import com.google.gson.*;
 import vk.testeng.model.FewOptionsAnswer;
@@ -13,8 +13,8 @@ public class QuestionSerializer implements JsonSerializer<Question> {
     @Override
     public JsonElement serialize(Question question, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject result = new JsonObject();
+        result.addProperty("id", Integer.toString(question.getId()));
         Question.AnswerType type = question.getType();
-        //result.addProperty("id", question.getId());
         result.addProperty("type", type.name());
         result.addProperty("maxPoints", question.getMaxPoints());
         result.addProperty("task", question.getTask());

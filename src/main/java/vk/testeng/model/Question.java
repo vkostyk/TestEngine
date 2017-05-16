@@ -62,7 +62,7 @@ public class Question
             if (o.length()==0) {throw  new RuntimeException("options element contains empty value");}
         }
         ArrayList<Integer> als;
-        switch (type)
+        switch (answerType)
         {
             case ONEOPTION:
                 if (((OneOptionAnswer)answer).getAnswer()<0) {throw new RuntimeException("wrong answer value");}

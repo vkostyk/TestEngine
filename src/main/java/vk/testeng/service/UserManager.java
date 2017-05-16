@@ -57,19 +57,14 @@ public class UserManager {
                 return new LoginResult(LoginState.NOSUCHUSER, -1);
             }
             int userId = rs.getInt("id");
-            System.out.println("rs.getInt passed");
             String password = rs.getString("password");
             if (!  password.equals(user.getPassword()))
             {
-                System.out.println(rs.getString("password")+"!="+user.getPassword());
                 return new LoginResult(LoginState.WRONGPASSWORD, userId);
             }
             String access = rs.getString("access");
             return  new LoginResult((access.equals("ADMIN")?LoginState.ISADMIN:LoginState.ISUSER), userId);
-
-
         } catch (Exception e){
-
             throw new RuntimeException("DB interaction failed on users table");
         }
     }
@@ -81,7 +76,6 @@ public class UserManager {
         try {
             c = ConnectionManager.connect();
             stmt = c.createStatement();
-            System.out.println(user.getUsername());
             ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE name='"+user.getUsername()+"';");
             boolean userExists = rs.next();
             if (userExists)
@@ -94,7 +88,7 @@ public class UserManager {
                 return new RegResult(RegState.SUCCESS, rs.getInt("id"));
             }
         } catch (Exception e){
-            throw new RuntimeException(e);
+            throw new RuntimeException("DB interaction failed on users table");
         }
     }
 
