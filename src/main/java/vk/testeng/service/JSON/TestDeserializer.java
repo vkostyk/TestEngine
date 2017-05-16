@@ -48,8 +48,9 @@ public class TestDeserializer implements JsonDeserializer<Test> {
         }
         for (JsonElement question : JSONQuestions)
         {
-            questions.add(context.deserialize(question, Question.class));
+                questions.add(context.deserialize(question, Question.class));
         }
+
         return new Test(id, maxPoints, questions);
     }
 }

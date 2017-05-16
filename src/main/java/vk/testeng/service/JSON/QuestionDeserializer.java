@@ -1,6 +1,10 @@
 package vk.testeng.service.JSON;
 import com.google.gson.*;
 import vk.testeng.model.*;
+import vk.testeng.model.answer.AbstractAnswer;
+import vk.testeng.model.answer.FewOptionsAnswer;
+import vk.testeng.model.answer.MatchingAnswer;
+import vk.testeng.model.answer.OneOptionAnswer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -82,7 +86,7 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
         }
         switch (type)
         {
-            case ONEOPTION:
+            case ONE_OPTION:
                 if (jsonObject.get("answer")==null)
                 {
                     throw new JsonParseException(JSONError.ANSWER.name());
@@ -93,7 +97,7 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
                     throw new JsonParseException(JSONError.ANSWER.name());
                 }
                 break;
-            case FEWOPTIONS:
+            case FEW_OPTIONS:
             case MATCHING:
                 answers = new ArrayList<Integer>();
                 try {
@@ -111,10 +115,10 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
                 }
                 switch (type)
                 {
-                    case FEWOPTIONS:
+                    case FEW_OPTIONS:
                         abstractAnswer = new FewOptionsAnswer(answers);
                         break;
-                    case ONEOPTION:
+                    case ONE_OPTION:
                         abstractAnswer = new MatchingAnswer(answers);
                         break;
                     default:
@@ -124,6 +128,10 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
             default:
                 throw new JsonParseException(JSONError.TYPE.name());
         }
+        try {
         return new Question(id, type, maxPoints, task, optionsObj, abstractAnswer);
+        } catch  (RuntimeException e) {
+            throw new JsonParseException(JSONError.QUESTION.name());
+        }
     }
 }

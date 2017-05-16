@@ -1,4 +1,4 @@
-package vk.testeng.model;
+package vk.testeng.model.answer;
 
 public class OneOptionAnswer extends AbstractAnswer
 {

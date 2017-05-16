@@ -1,10 +1,12 @@
 package vk.testeng.model;
 
+import vk.testeng.model.answer.*;
+
 import java.util.ArrayList;
 
 public class Question
 {
-    public enum AnswerType {ONEOPTION, FEWOPTIONS, MATCHING, INPUT, ESSAY};
+    public enum AnswerType {ONE_OPTION, FEW_OPTIONS, MATCHING, INPUT, ESSAY}
     private int id;
     private AnswerType type;
     private int maxPoints;
@@ -28,7 +30,7 @@ public class Question
         if (task == null) {throw new RuntimeException("task does not reference anything (null value)");}
         if (task.length()<10) {throw new RuntimeException("task is too short");}
         if      (
-                (answerType==AnswerType.MATCHING||answerType==AnswerType.FEWOPTIONS)
+                (answerType==AnswerType.MATCHING||answerType==AnswerType.FEW_OPTIONS)
                         &&  (options.size()<3)
                 )
         {
@@ -45,8 +47,8 @@ public class Question
             throw new RuntimeException("answer should be of one of predefined types");
         }
         if      (
-                ((answerType==AnswerType.ONEOPTION)&&!(answer instanceof OneOptionAnswer))
-                        ||  ((answerType==AnswerType.FEWOPTIONS)&&!(answer instanceof FewOptionsAnswer))
+                ((answerType==AnswerType.ONE_OPTION)&&!(answer instanceof OneOptionAnswer))
+                        ||  ((answerType==AnswerType.FEW_OPTIONS)&&!(answer instanceof FewOptionsAnswer))
                         ||  ((answerType==AnswerType.MATCHING)&&!(answer instanceof MatchingAnswer))
                         ||  ((answerType==AnswerType.INPUT)&&!(answer instanceof InputAnswer))
                         ||  ((answerType==AnswerType.ESSAY)&&!(answer instanceof EssayAnswer))
@@ -64,10 +66,10 @@ public class Question
         ArrayList<Integer> als;
         switch (answerType)
         {
-            case ONEOPTION:
+            case ONE_OPTION:
                 if (((OneOptionAnswer)answer).getAnswer()<0) {throw new RuntimeException("wrong answer value");}
                 break;
-            case FEWOPTIONS:
+            case FEW_OPTIONS:
                 als = ((FewOptionsAnswer)answer).getAnswer();
                 if (als==null) {throw new RuntimeException("answer parameter is empty");}
                 for (Integer a : als)

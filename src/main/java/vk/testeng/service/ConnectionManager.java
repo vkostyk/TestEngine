@@ -14,7 +14,7 @@ public class ConnectionManager {
     static Connection c;
     public static Connection connect()
     {
-        Connection c = null;
+        c = null;
         try {
             Path file = Paths.get("C:/Users/vkostyk/Desktop/4/TestEngine/DB.cre");
             String line = null;

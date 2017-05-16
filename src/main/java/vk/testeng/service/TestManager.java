@@ -1,6 +1,7 @@
 package vk.testeng.service;
 
 import vk.testeng.model.*;
+import vk.testeng.model.answer.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,25 +14,37 @@ import java.util.Random;
 
 public class TestManager {
 
-    private void getOneOption(int questionId, Connection c, Question question)
+    private class OptionsContainer
+    {
+        ArrayList<String> options;
+        AbstractAnswer answer;
+        OptionsContainer()
+        {
+            options = new ArrayList<>();
+            answer = null;
+        }
+    }
+    private OptionsContainer getOneOption(int questionId, Connection c)
     {
         Statement stmt = null;
-        //OneOptionAnswer oneOptionAnswer = new  OneOptionAnswer();
+        OptionsContainer optionsContainer = new OptionsContainer();
         try {
             stmt = c.createStatement();
-            ArrayList<String> options = new ArrayList<>();
             ResultSet queryResultSet = stmt.executeQuery("SELECT * FROM options WHERE question_id="+questionId+" ORDER BY id;");
             int counter = 0;
             while (queryResultSet.next())
             {
-                if (queryResultSet.getBoolean("is_correct")) question.setCorrectAnswer(new OneOptionAnswer(counter));
-                options.add(queryResultSet.getString("option"));
+                if (queryResultSet.getBoolean("is_correct"))
+                {
+                    optionsContainer.answer = new OneOptionAnswer(counter);
+                }
+                optionsContainer.options.add(queryResultSet.getString("option"));
                 counter++;
             }
-            question.setOptions(options);
+            return optionsContainer;
         } catch (Exception e)
         {
-
+            return null;
         } finally
         {
             if (stmt != null) {
@@ -40,25 +53,25 @@ public class TestManager {
             }
         }
     }
-    private void getFewOptions(int questionId, Connection c, Question question)
+    private OptionsContainer getFewOptions(int questionId, Connection c)
     {
         Statement stmt = null;
+        OptionsContainer optionsContainer = new OptionsContainer();
         try {
             stmt = c.createStatement();
-            ArrayList<String> options = new ArrayList<>();
             ResultSet queryResultSet = stmt.executeQuery("SELECT * FROM options WHERE question_id="+questionId+" ORDER BY id;");
             ArrayList<Integer> answers = new ArrayList<>();
             int counter = 0;
             while(queryResultSet.next())
             {
                 if (queryResultSet.getBoolean("is_correct")) answers.add(counter);
-                options.add(queryResultSet.getString("option"));
+                optionsContainer.options.add(queryResultSet.getString("option"));
                 counter++;
             }
-            question.setCorrectAnswer(new FewOptionsAnswer(answers));
-            question.setOptions(options);
+            optionsContainer.answer = new FewOptionsAnswer(answers);
+            return optionsContainer;
         } catch (Exception e) {
-
+            return null;
         } finally  {
             if (stmt != null) {
                 try {stmt.close();}
@@ -66,16 +79,16 @@ public class TestManager {
             }
         }
     }
-    private void getMatching(int questionId, Connection c, Question question)
+    private OptionsContainer getMatching(int questionId, Connection c)
     {
         Statement stmt = null;
+        OptionsContainer optionsContainer = new OptionsContainer();
         try {
             stmt = c.createStatement();
             ResultSet queryResultSet = stmt.executeQuery("SELECT * FROM matching WHERE question_id="+questionId+" ORDER BY id;");
             ArrayList<String> options = new ArrayList<>();
             ArrayList<Integer> optionId = new ArrayList<>();
             ArrayList<Integer> optionPair = new ArrayList<>();
-            options = new ArrayList<>();
             while (queryResultSet.next())
             {
                 options.add(queryResultSet.getString("option"));
@@ -118,10 +131,12 @@ public class TestManager {
                 leftOptions.add(rightOptions.get(i));
             }
             options = leftOptions;
-            question.setOptions(options);
-            question.setCorrectAnswer(new MatchingAnswer(keys));
-        } catch (Exception e) {
 
+            optionsContainer.options = options;
+            optionsContainer.answer = new MatchingAnswer(keys);
+            return optionsContainer;
+        } catch (Exception e) {
+            return null;
         } finally {
             if (stmt != null) {
                 try {stmt.close();}
@@ -129,16 +144,18 @@ public class TestManager {
             }
         }
     }
-    private void getInput(int questionId, Connection c, Question question)
+    private OptionsContainer getInput(int questionId, Connection c)
     {
+        OptionsContainer optionsContainer = new OptionsContainer();
         Statement stmt = null;
         try {
             stmt = c.createStatement();
             ResultSet queryResultSet = stmt.executeQuery("SELECT * FROM options WHERE qid="+questionId+";");
             queryResultSet.next();
-            question.setCorrectAnswer(new InputAnswer(queryResultSet.getString("option")));
+            optionsContainer.answer = new InputAnswer(queryResultSet.getString("option"));
+            return optionsContainer;
         } catch (Exception e) {
-
+            return null;
         } finally {
             if (stmt != null) {
                 try {stmt.close();}
@@ -253,202 +270,6 @@ public class TestManager {
         }
     }
 
-    public Test getTest(int id)
-    {
-        Test test = new Test();
-        Connection c = null;
-        Statement stmt = null;
-        try {
-            c = ConnectionManager.connect();
-            //c.setAutoCommit(false);
-            System.out.println("Opened database successfully");
-
-            stmt = c.createStatement();
-
-            ResultSet rs = stmt.executeQuery("SELECT * FROM tests WHERE id="+id+";");
-            rs.next();
-            test.setMaxPoints(rs.getInt("points"));
-            rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+id+" ORDER BY id;");
-
-            while (rs.next())
-            {
-                Question question;
-                int questionId = rs.getInt("id");
-                question = getQuestion(questionId);
-                test.addQuestion(question);
-            }
-
-            rs.close();
-            stmt.close();
-            c.close();
-
-        } catch ( Exception e ) {
-            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
-            System.exit(0);
-        }
-        System.out.println("Operation done successfully");
-        return test;
-    }
-    public int addTest(Test test)
-    {
-        Connection c = null;
-        Statement stmt = null;
-        try {
-            //c.setAutoCommit(false);
-            c = ConnectionManager.connect();
-            System.out.println("Opened database successfully");
-            stmt = c.createStatement();
-            ResultSet rs;
-            rs = stmt.executeQuery("INSERT INTO tests(points) VALUES("+ test.getMaxPoints()+") RETURNING id;");
-            rs.next();
-            int testId = rs.getInt("id");
-            for (int i = 0; i<test.getQuestionsCount(); i++)
-            {
-                Question question = test.getQuestion(i);
-
-                addQuestion(testId, question);
-
-
-
-            }
-            stmt.close();
-            //c.commit();
-            c.close();
-            return testId;
-        } catch (Exception e) {
-            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
-            System.exit(0);
-            return -1;
-        }
-    }
-    public int addQuestion(int testId, Question question)
-    {
-        Question.AnswerType questionType = question.getType();
-        Connection c = null;
-        Statement stmt = null;
-
-        try {
-            c = ConnectionManager.connect();
-            stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", " + question.getTask() + ", " + questionType.name() + ", " + question.getMaxPoints() + ") RETURNING id;");
-            rs.next();
-            int questionId = rs.getInt("id");
-            //PreparedStatement ps;
-            //ArrayList<String> options = question.getOptions();
-            switch (questionType) {
-                case ONEOPTION:
-                    addOneOption(questionId, c, question);
-                    break;
-                case FEWOPTIONS:
-                    addFewOptions(questionId, c, question);
-                    break;
-                case MATCHING:
-                    addMatching(questionId, c, question);
-                    break;
-                case INPUT:
-                    addInput(questionId, c, question);
-                    break;
-                case ESSAY:
-                    //nothing to add
-                    break;
-            }
-            return questionId;
-        } catch (Exception e)
-        {
-            return -1;
-        }
-    }
-    public Question getQuestion(int questionId)
-    {
-        Connection c = null;
-        Statement stmt = null;
-        Question question = new Question();
-        try
-        {
-            c = ConnectionManager.connect();
-            stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM questions WHERE id="+questionId+";");
-            rs.next();
-
-            question.setId(questionId);
-            Question.AnswerType type = Question.AnswerType.valueOf(rs.getString("type"));
-            question.setType(type);
-            question.setTask(rs.getString("task"));
-            question.setMaxPoints(rs.getInt("maxpoints"));
-
-
-            switch (type)
-            {
-                case ONEOPTION:
-                    getOneOption(questionId, c, question);
-                    break;
-                case FEWOPTIONS:
-                    getFewOptions(questionId, c, question);
-                    break;
-                case MATCHING:
-                    getMatching(questionId, c, question);
-                    break;
-                case INPUT:
-                    getInput(questionId, c, question);
-                    break;
-                case ESSAY:
-
-                    break;
-            }
-            rs.close();
-            stmt.close();
-            c.close();
-            return question;
-        } catch (Exception e)
-        {
-
-        }
-        return question;
-    }
-
-    //if exists, update insteadof insert
-    //newQuestion must contain valid question id in its field [id] corresponding to id in DB
-    public void editQuestion(int testId, Question newQuestion) {
-        Connection c = null;
-        Statement stmt = null;
-
-        Question original = getQuestion(newQuestion.getId());
-        if ((original.getType() == newQuestion.getType()&&(original.getOptions().size()==newQuestion.getOptions().size()))) {
-            try {
-                c = ConnectionManager.connect();
-                stmt = c.createStatement();
-                stmt.executeUpdate("UPDATE questions SET test_id="+testId+", task="+newQuestion.getTask()+", type="+newQuestion.getType()+", max_points="+newQuestion.getMaxPoints()+";");
-
-
-                switch(original.getType())
-                {
-                    case ONEOPTION:
-                        editOneOption(c, newQuestion);
-                        break;
-                    case FEWOPTIONS:
-                        editFewOptions(c, newQuestion);
-                        break;
-                    case MATCHING:
-                        editMatching(c, newQuestion);
-                        break;
-                    case INPUT:
-                        editInput(c, newQuestion);
-                        break;
-                    case ESSAY:
-
-                        break;
-                }
-
-
-            } catch (Exception e) {
-
-            }
-        } else {
-            //error
-        }
-
-
-    }
     private void editOneOption(Connection c, Question question)
     {
         PreparedStatement ps = null;
@@ -559,4 +380,194 @@ public class TestManager {
         }
     }
 
+    public Test getTest(int id)
+    {
+        Test test = new Test();
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            c = ConnectionManager.connect();
+            //c.setAutoCommit(false);
+            System.out.println("Opened database successfully");
+
+            stmt = c.createStatement();
+
+            ResultSet rs = stmt.executeQuery("SELECT * FROM tests WHERE id="+id+";");
+            rs.next();
+            test.setMaxPoints(rs.getInt("points"));
+            rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+id+" ORDER BY id;");
+
+            while (rs.next())
+            {
+                Question question;
+                int questionId = rs.getInt("id");
+                question = getQuestion(questionId);
+                test.addQuestion(question);
+            }
+
+            rs.close();
+            stmt.close();
+            c.close();
+
+        } catch ( Exception e ) {
+            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+            System.exit(0);
+        }
+        System.out.println("Operation done successfully");
+        return test;
+    }
+    public int addTest(Test test)
+    {
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            //c.setAutoCommit(false);
+            c = ConnectionManager.connect();
+            System.out.println("Opened database successfully");
+            stmt = c.createStatement();
+            ResultSet rs;
+            rs = stmt.executeQuery("INSERT INTO tests(points) VALUES("+ test.getMaxPoints()+") RETURNING id;");
+            rs.next();
+            int testId = rs.getInt("id");
+            for (int i = 0; i<test.getQuestionsCount(); i++)
+            {
+                Question question = test.getQuestion(i);
+                addQuestion(testId, question);
+            }
+            stmt.close();
+            //c.commit();
+            c.close();
+            return testId;
+        } catch (Exception e) {
+            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+            System.exit(0);
+            return -1;
+        }
+    }
+    public int addQuestion(int testId, Question question)
+    {
+        Question.AnswerType questionType = question.getType();
+        Connection c = null;
+        Statement stmt = null;
+
+        try {
+            c = ConnectionManager.connect();
+            stmt = c.createStatement();
+            ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", " + question.getTask() + ", " + questionType.name() + ", " + question.getMaxPoints() + ") RETURNING id;");
+            rs.next();
+            int questionId = rs.getInt("id");
+            //PreparedStatement ps;
+            //ArrayList<String> options = question.getOptions();
+            switch (questionType) {
+                case ONE_OPTION:
+                    addOneOption(questionId, c, question);
+                    break;
+                case FEW_OPTIONS:
+                    addFewOptions(questionId, c, question);
+                    break;
+                case MATCHING:
+                    addMatching(questionId, c, question);
+                    break;
+                case INPUT:
+                    addInput(questionId, c, question);
+                    break;
+                case ESSAY:
+                    //nothing to add
+                    break;
+            }
+            return questionId;
+        } catch (Exception e)
+        {
+            return -1;
+        }
+    }
+    public Question getQuestion(int questionId)
+    {
+        Connection c = null;
+        Statement stmt = null;
+        Question question;
+        Question.AnswerType type;
+        String task;
+        int maxPoints;
+        try
+        {
+            c = ConnectionManager.connect();
+            stmt = c.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM questions WHERE id="+questionId+";");
+            rs.next();
+
+            type = Question.AnswerType.valueOf(rs.getString("type"));
+
+            task = rs.getString("task");
+            maxPoints = rs.getInt("maxpoints");
+            OptionsContainer optionsContainer;
+            switch (type)
+            {
+                case ONE_OPTION:
+                    optionsContainer = getOneOption(questionId, c);
+                    break;
+                case FEW_OPTIONS:
+                    optionsContainer = getFewOptions(questionId, c);
+                    break;
+                case MATCHING:
+                    optionsContainer = getMatching(questionId, c);
+                    break;
+                case INPUT:
+                    optionsContainer = getInput(questionId, c);
+                    break;
+                default:
+                    return null;
+            }
+            rs.close();
+            stmt.close();
+            c.close();
+            return new Question(questionId, type, maxPoints, task, optionsContainer.options, optionsContainer.answer);
+        } catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    //if exists, update insteadof insert
+    //newQuestion must contain valid question id in its field [id] corresponding to id in DB
+    public void editQuestion(int testId, Question newQuestion) {
+        Connection c = null;
+        Statement stmt = null;
+
+        Question original = getQuestion(newQuestion.getId());
+        if ((original.getType() == newQuestion.getType()&&(original.getOptions().size()==newQuestion.getOptions().size()))) {
+            try {
+                c = ConnectionManager.connect();
+                stmt = c.createStatement();
+                stmt.executeUpdate("UPDATE questions SET test_id="+testId+", task="+newQuestion.getTask()+", type="+newQuestion.getType()+", max_points="+newQuestion.getMaxPoints()+";");
+
+
+                switch(original.getType())
+                {
+                    case ONE_OPTION:
+                        editOneOption(c, newQuestion);
+                        break;
+                    case FEW_OPTIONS:
+                        editFewOptions(c, newQuestion);
+                        break;
+                    case MATCHING:
+                        editMatching(c, newQuestion);
+                        break;
+                    case INPUT:
+                        editInput(c, newQuestion);
+                        break;
+                    case ESSAY:
+
+                        break;
+                }
+
+
+            } catch (Exception e) {
+
+            }
+        } else {
+            //error
+        }
+
+    }
 }

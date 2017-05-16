@@ -2,8 +2,8 @@ package vk.testeng.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import vk.testeng.model.FewOptionsAnswer;
-import vk.testeng.model.OneOptionAnswer;
+import vk.testeng.model.answer.FewOptionsAnswer;
+import vk.testeng.model.answer.OneOptionAnswer;
 import vk.testeng.model.Question;
 import vk.testeng.model.Test;
 import vk.testeng.service.JSON.QuestionDeserializer;
@@ -37,13 +37,13 @@ public class TestServlet extends HttpServlet {
             o1.add("truro");
             o1.add("true");
             o1.add("false");
-            test.addQuestion(new Question(0, Question.AnswerType.ONEOPTION, 10, "which is true?", o1, new OneOptionAnswer(1)));
+            test.addQuestion(new Question(0, Question.AnswerType.ONE_OPTION, 10, "which is true?", o1, new OneOptionAnswer(1)));
             ArrayList<String> o2 = new ArrayList<>();
             o2.add("fels");
             o2.add("false");
             o2.add("false");
             o2.add("falsee");
-            test.addQuestion(new Question(1, Question.AnswerType.FEWOPTIONS, 15, "which is false?", o2, new FewOptionsAnswer(1, 2)));
+            test.addQuestion(new Question(1, Question.AnswerType.FEW_OPTIONS, 15, "which is false?", o2, new FewOptionsAnswer(1, 2)));
             String json = gson.toJson(test);
 
 

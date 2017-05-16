@@ -63,7 +63,7 @@
          // if (typeof questionType!=='number') {return false;}
          switch (question)
          {
-         case questionType.ONEOPTION:
+         case questionType.ONE_OPTION:
          return "<option value=''></option>";
          break;
          }

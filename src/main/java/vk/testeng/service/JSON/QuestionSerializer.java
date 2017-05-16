@@ -1,9 +1,9 @@
 package vk.testeng.service.JSON;
 
 import com.google.gson.*;
-import vk.testeng.model.FewOptionsAnswer;
-import vk.testeng.model.MatchingAnswer;
-import vk.testeng.model.OneOptionAnswer;
+import vk.testeng.model.answer.FewOptionsAnswer;
+import vk.testeng.model.answer.MatchingAnswer;
+import vk.testeng.model.answer.OneOptionAnswer;
 import vk.testeng.model.Question;
 
 
@@ -32,10 +32,10 @@ public class QuestionSerializer implements JsonSerializer<Question> {
         JsonArray answers;
         switch (type)
         {
-            case ONEOPTION:
+            case ONE_OPTION:
                 result.addProperty("answer", ((OneOptionAnswer)(question.getCorrectAnswer())).getAnswer());
                 break;
-            case FEWOPTIONS:
+            case FEW_OPTIONS:
                 answers = new JsonArray();
                 result.add("answer", answers);
                 FewOptionsAnswer fewAnswersObj = (FewOptionsAnswer)question.getCorrectAnswer();

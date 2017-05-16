@@ -1,4 +1,4 @@
-package vk.testeng.model;
+package vk.testeng.model.answer;
 
 import java.util.ArrayList;
 

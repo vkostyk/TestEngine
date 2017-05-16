@@ -1,5 +1,7 @@
 package vk.testeng.model;
 
+import vk.testeng.model.answer.AbstractAnswer;
+
 import java.util.ArrayList;
 
 public class Quiz {
