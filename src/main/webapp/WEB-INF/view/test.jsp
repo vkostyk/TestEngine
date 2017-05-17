@@ -7,8 +7,8 @@
 
         $( document ).ready(function() {
 
-            $.getJSON('./test', function(data){
-                document.write(data.questions[0].task);
+            $.get('./test', function(data){
+                document.write(data);
             });
 
 

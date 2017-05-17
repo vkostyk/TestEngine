@@ -3,18 +3,20 @@ CREATE USER testeng WITH password 'qwerty';
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO testeng;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO testeng;
 
-CREATE TYPE question_type AS ENUM ('ONEOPTION', 'FEWOPTIONS', 'MATCHING', 'INPUT', 'ESSAY');
+CREATE TYPE question_type AS ENUM ('ONE_OPTION', 'FEW_OPTIONS', 'MATCHING', 'INPUT', 'ESSAY');
 CREATE TYPE roles AS ENUM ('USER', 'ADMIN');
 
 
 CREATE TABLE tests(
   id 	SERIAL PRIMARY KEY,
+  name text,
+  description text,
   points	integer
 );
 
 
 CREATE TABLE questions(
-  id integer PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY,
   test_id		integer NOT NULL,
   task		text,
   type		question_type,
@@ -22,14 +24,14 @@ CREATE TABLE questions(
 );
 /*options with keys for one-,multioption questions*/
 CREATE TABLE options(
-  id integer	PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY,
   question_id	integer NOT NULL,
   option		text,
   is_correct	boolean
 );
 /*table of correct paired matches*/
 CREATE TABLE matching(
-  id integer	PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY,
   question_id 	integer NOT NULL,
   option		text,
   pair_id		integer
@@ -38,7 +40,7 @@ CREATE TABLE matching(
 /*USER-SENT*/
 /*table of user-sent inputs and essays*/
 CREATE TABLE user_inputs(
-  id integer	PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY,
   question_id	integer NOT NULL,
   user_id		integer NOT NULL,
   answer		text
@@ -47,14 +49,14 @@ CREATE TABLE user_inputs(
 
 /*user-sent answers to one and multioption questions*/
 CREATE TABLE answers(
-  id integer  PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY,
   question_id integer NOT NULL,
   user_id     integer NOT NULL,
   option_id   integer NOT NULL
 );
 
 CREATE TABLE matching_answers(
-  id integer  PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY,
   question_id integer NOT NULL,
   user_id     integer NOT NULL,
   key_id      integer NOT NULL,
@@ -63,7 +65,7 @@ CREATE TABLE matching_answers(
 
 
 CREATE TABLE users (
-  id       integer PRIMARY KEY NOT NULL,
+  id       SERIAL PRIMARY KEY,
   name     text,
   password TEXT,
   access roles

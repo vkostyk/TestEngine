@@ -8,7 +8,10 @@ public enum ServletSuccess
         {
             return ID_LEFT+id+ID_RIGHT;
         }
-    }, EDIT("Edit successful"), FINISH_EDIT("Edition session finished successfully");
+    },
+    EDIT("Edit successful"),
+    FINISH_EDIT("Edition session finished successfully"),
+    QUIZ_FINISHED("Quiz successfully finished");
     private static final String ID_LEFT = "{\"id\":";
     private static final String ID_RIGHT = "}";
     private static final String LEFT = "{\"success\":\"";

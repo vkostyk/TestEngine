@@ -11,7 +11,8 @@ package vk.testeng.servlet.service;
         NO_MAX_POINTS("Max points must be provided at initiation of test addition"),
         NOT_LOGGED("Login first"),
         TEST_ID_NOT_SET("Test id must be set"),
-        NO_QUESTION_JSON("Question JSON data not sent"),
+        QUESTION_ID_NOT_SET("Question id must be set"),
+        JSON_NO_QUESTION("Question JSON data not sent"),
         USER_IS_ADMIN("Login as user to pass a test"),
         JSON_FORMAT("Wrong JSON format"),
         JSON_ID("Question id not set or wrong"),
@@ -20,7 +21,8 @@ package vk.testeng.servlet.service;
         JSON_TASK("Question task not set or wrong"),
         JSON_OPTIONS("Question options not set or wrong"),
         JSON_ANSWER("Question answer not set or wrong"),
-        QUIZ_SESSION_ALIVE("Finish active quiz/test prior to starting a new one")
+        QUIZ_SESSION_ALIVE("Finish active quiz/test prior to starting a new one"),
+        QUIZ_SESSION_DEAD("Quiz not started")
         ;
         private static final String LEFT = "{\"error\":\"";
         private static final String RIGHT = "\"}";

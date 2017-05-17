@@ -22,6 +22,8 @@ public class Test {
     private int id;
     private ArrayList<Question> questions;
     private int maxPoints;
+    private String description;
+    private String name;
     public Test()
     {
         questions = new ArrayList<>();
@@ -31,17 +33,26 @@ public class Test {
         this();
         this.id = id;
     }
+    public Test(int id, int maxPoints, String name, String description)
+    {
+        this.id = id;
+        this.maxPoints = maxPoints;
+        this.name = name;
+        this.description = description;
+    }
     public Test (int id, int maxPoints)
     {
         this();
         this.id = id;
         this.maxPoints = maxPoints;
     }
-    public Test (int id, int maxPoints, ArrayList<Question> questions)
+    public Test (int id, int maxPoints, String name, String description, ArrayList<Question> questions)
     {
         this();
         this.id = id;
         this.maxPoints = maxPoints;
+        this.name = name;
+        this.description = description;
         this.questions = questions;
     }
     public void setId(int testId)
@@ -52,10 +63,7 @@ public class Test {
     {
         return id;
     }
-    void create(ArrayList<Question> questions)
-    {
-        this.questions = questions;
-    }
+    //void create(ArrayList<Question> questions) {this.questions = questions;}
 
     public Test getFromDB(int id)
     {
@@ -112,8 +120,6 @@ public class Test {
     }
     public void save()
     {
-
-
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Question.class, new QuestionSerializer())
@@ -161,12 +167,21 @@ public class Test {
     {
         return maxPoints;
     }
+    public String getDescription() {return description;}
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public void setMaxPoints(int maxPoints)
     {
         this.maxPoints  = maxPoints;
     }
-
+    public void setDescription(String description) {this.description = description;}
     public void setQuestion(int id, Question question)
     {
         maxPoints -=questions.get(id).getMaxPoints();

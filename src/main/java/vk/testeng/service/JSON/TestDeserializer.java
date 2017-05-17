@@ -14,6 +14,8 @@ public class TestDeserializer implements JsonDeserializer<Test> {
         JsonObject jsonObject;
         int maxPoints;
         int id;
+        String name;
+        String description;
         JsonArray JSONQuestions;
         ArrayList<Question> questions = new ArrayList<>();
 
@@ -32,6 +34,27 @@ public class TestDeserializer implements JsonDeserializer<Test> {
         } catch (ClassCastException|IllegalStateException e) {
             throw new JsonParseException(JSONError.TEST_ID.name());
         }
+
+        if (jsonObject.get("name")==null)
+        {
+            throw new JsonParseException(JSONError.TEST_NAME.name());
+        }
+        try {
+            name = jsonObject.get("name").getAsString();
+        } catch (ClassCastException|IllegalStateException e) {
+            throw new JsonParseException(JSONError.TEST_NAME.name());
+        }
+
+        if (jsonObject.get("description")==null)
+        {
+            throw new JsonParseException(JSONError.TEST_DESCRIPTION.name());
+        }
+        try {
+            description = jsonObject.get("description").getAsString();
+        } catch (ClassCastException|IllegalStateException e) {
+            throw new JsonParseException(JSONError.TEST_DESCRIPTION.name());
+        }
+
         if (jsonObject.get("maxPoints")==null)
         {
             throw new JsonParseException(JSONError.TEST_MAX_POINTS.name());
@@ -51,6 +74,6 @@ public class TestDeserializer implements JsonDeserializer<Test> {
                 questions.add(context.deserialize(question, Question.class));
         }
 
-        return new Test(id, maxPoints, questions);
+        return new Test(id, maxPoints, name, description, questions);
     }
 }

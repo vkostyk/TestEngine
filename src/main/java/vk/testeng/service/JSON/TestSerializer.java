@@ -13,6 +13,8 @@ public class TestSerializer implements JsonSerializer<Test> {
     {
         JsonObject result = new JsonObject();
         result.addProperty("id", Integer.toString(test.getId()));
+        result.addProperty("name", test.getName());
+        result.addProperty("description", test.getDescription());
         result.addProperty("maxPoints", Integer.toString(test.getMaxPoints()));
         JsonArray questions = new JsonArray();
         result.add("questions", questions);

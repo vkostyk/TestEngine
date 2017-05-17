@@ -380,6 +380,70 @@ public class TestManager {
         }
     }
 
+    public  ArrayList<Integer> getQuestionIds(int testId)
+    {
+        ArrayList<Integer> questionIds = new ArrayList<>();
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            c = ConnectionManager.connect();
+            //c.setAutoCommit(false);
+
+            stmt = c.createStatement();
+
+            ResultSet rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+testId+" ORDER BY id;");
+            while (rs.next())
+            {
+                questionIds.add(rs.getInt("id"));
+            }
+
+            rs.close();
+            stmt.close();
+            c.close();
+
+        } catch ( Exception e ) {
+            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+            System.exit(0);
+        }
+        return questionIds;
+    }
+    //returns info only
+    public ArrayList<Test> getTestsInfo()
+    {
+        ArrayList<Test> tests = new ArrayList<>();
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            c = ConnectionManager.connect();
+            //c.setAutoCommit(false);
+
+            stmt = c.createStatement();
+
+            ResultSet rs = stmt.executeQuery("SELECT * FROM tests;");
+            while (rs.next())
+            {
+                Test test = new Test();
+                test.setId(rs.getInt("id"));
+                test.setMaxPoints(rs.getInt("points"));
+                test.setName(rs.getString("name"));
+                test.setDescription(rs.getString("description"));
+                tests.add(test);
+            }
+
+            rs.close();
+            stmt.close();
+            c.close();
+
+        } catch ( Exception e ) {
+            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+            System.exit(0);
+        }
+        return tests;
+    }
+
+
+
+
     public Test getTest(int id)
     {
         Test test = new Test();
@@ -388,13 +452,14 @@ public class TestManager {
         try {
             c = ConnectionManager.connect();
             //c.setAutoCommit(false);
-            System.out.println("Opened database successfully");
 
             stmt = c.createStatement();
 
             ResultSet rs = stmt.executeQuery("SELECT * FROM tests WHERE id="+id+";");
             rs.next();
             test.setMaxPoints(rs.getInt("points"));
+            test.setName(rs.getString("name"));
+            test.setDescription(rs.getString("description"));
             rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+id+" ORDER BY id;");
 
             while (rs.next())
@@ -426,7 +491,7 @@ public class TestManager {
             System.out.println("Opened database successfully");
             stmt = c.createStatement();
             ResultSet rs;
-            rs = stmt.executeQuery("INSERT INTO tests(points) VALUES("+ test.getMaxPoints()+") RETURNING id;");
+            rs = stmt.executeQuery("INSERT INTO tests(name, description, points) VALUES('"+test.getName()+"' ,'"+test.getDescription()+"', "+ test.getMaxPoints()+") RETURNING id;");
             rs.next();
             int testId = rs.getInt("id");
             for (int i = 0; i<test.getQuestionsCount(); i++)
@@ -453,7 +518,7 @@ public class TestManager {
         try {
             c = ConnectionManager.connect();
             stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", " + question.getTask() + ", " + questionType.name() + ", " + question.getMaxPoints() + ") RETURNING id;");
+            ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", '" + question.getTask() + "', '" + questionType.name() + "', " + question.getMaxPoints() + ") RETURNING id;");
             rs.next();
             int questionId = rs.getInt("id");
             //PreparedStatement ps;
@@ -539,7 +604,7 @@ public class TestManager {
             try {
                 c = ConnectionManager.connect();
                 stmt = c.createStatement();
-                stmt.executeUpdate("UPDATE questions SET test_id="+testId+", task="+newQuestion.getTask()+", type="+newQuestion.getType()+", max_points="+newQuestion.getMaxPoints()+";");
+                stmt.executeUpdate("UPDATE questions SET test_id="+testId+", task='"+newQuestion.getTask()+"', type='"+newQuestion.getType()+"', max_points="+newQuestion.getMaxPoints()+";");
 
 
                 switch(original.getType())

@@ -2,34 +2,36 @@ package vk.testeng.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import vk.testeng.model.answer.FewOptionsAnswer;
-import vk.testeng.model.answer.OneOptionAnswer;
-import vk.testeng.model.Question;
+import com.google.gson.reflect.TypeToken;
 import vk.testeng.model.Test;
-import vk.testeng.service.JSON.QuestionDeserializer;
-import vk.testeng.service.JSON.QuestionSerializer;
-import vk.testeng.service.JSON.TestDeserializer;
-import vk.testeng.service.JSON.TestSerializer;
+import vk.testeng.service.JSON.TestInfoArraySerializer;
+import vk.testeng.service.JSON.TestInfoSerializer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class TestServlet extends HttpServlet {
     protected void doGet (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
 
-            Gson gson = new GsonBuilder()
-                    .setPrettyPrinting()
-                    .registerTypeAdapter(Question.class, new QuestionSerializer())
-                    .registerTypeAdapter(Test.class, new TestSerializer())
-                    .registerTypeAdapter(Test.class, new TestDeserializer())
-                    .registerTypeAdapter(Question.class, new QuestionDeserializer())
-                    .create();
 
+        ArrayList<Test> tests = new ArrayList<>();
+        tests.add(new Test(0, 100, "test1", "some testst"));
+        tests.add(new Test(1, 200, "test2", "some another test"));
+        Type testListType = new TypeToken<ArrayList<Test>>(){}.getType();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Test.class,  new TestInfoSerializer())
+                .registerTypeAdapter(testListType, new TestInfoArraySerializer())
+                .setPrettyPrinting()
+                .create();
+        String json = gson.toJson(tests);
+        response.getWriter().write(json);
+/*
             Test test = new Test();
             test.setId(0);
             test.setMaxPoints(10+15);
@@ -51,7 +53,7 @@ public class TestServlet extends HttpServlet {
         Test test2 = gson.fromJson(json, Test.class);
         json = gson.toJson(test2);
 
-            response.getWriter().write(json);
+            response.getWriter().write(json);*/
 
     }
 }
