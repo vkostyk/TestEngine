@@ -6,10 +6,8 @@ import com.google.gson.reflect.TypeToken;
 import vk.testeng.model.Question;
 import vk.testeng.model.Test;
 import vk.testeng.model.User;
-import vk.testeng.service.JSON.QuestionIdsSerializer;
-import vk.testeng.service.JSON.QuestionOnlySerializer;
-import vk.testeng.service.JSON.TestInfoArraySerializer;
-import vk.testeng.service.JSON.TestInfoSerializer;
+import vk.testeng.model.answer.AbstractAnswer;
+import vk.testeng.service.JSON.*;
 import vk.testeng.service.TestManager;
 import vk.testeng.servlet.service.ServletError;
 import vk.testeng.servlet.service.ServletSuccess;
@@ -22,6 +20,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 
 public class QuizServlet extends HttpServlet {
@@ -84,6 +83,7 @@ public class QuizServlet extends HttpServlet {
     }
     private void initQuiz(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
+        //add attempt if needed
         HttpSession session = request.getSession(false);
         PrintWriter writer = response.getWriter();
         if (session==null || session.getAttribute("currentSessionUser")==null)
@@ -181,7 +181,18 @@ public class QuizServlet extends HttpServlet {
                 break;
 
             case SEND_ANSWER:
-
+                if (request.getParameter("JSON")==null)
+                {
+                    writer.write(ServletError.JSON_ANSWER.get());
+                    return;
+                }
+                String JSON = URLDecoder.decode(request.getParameter("JSON"), "UTF-8");
+                Question.AnswerType type = testManager.getQuestionType(questionId);
+                gson = new GsonBuilder()
+                        .registerTypeAdapter(AbstractAnswer.class,  new UserAnswerDeserializer(type))
+                        .create();
+                AbstractAnswer answer = gson.fromJson(JSON, AbstractAnswer.class);
+                testManager.addUserAnswer(testId, questionId, user.getId(), testManager.getLastAttempt(testId, user.getId()), answer, type);
                 break;
         }
     }

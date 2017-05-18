@@ -14,10 +14,14 @@ CREATE TABLE tests(
   points	integer
 );
 
+CREATE TABLE test_map(
+  id SERIAL PRIMARY KEY,
+  test_id INTEGER NOT NULL ,
+  question_id INTEGER NOT NULL
+);
 
 CREATE TABLE questions(
   id SERIAL PRIMARY KEY,
-  test_id		integer NOT NULL,
   task		text,
   type		question_type,
   max_points	integer
@@ -41,28 +45,29 @@ CREATE TABLE matching(
 /*table of user-sent inputs and essays*/
 CREATE TABLE user_inputs(
   id SERIAL PRIMARY KEY,
-  question_id	integer NOT NULL,
-  user_id		integer NOT NULL,
+  test_id INTEGER,
+  question_id	INTEGER NOT NULL,
+  user_id		INTEGER NOT NULL,
+  attempt INTEGER NOT NULL ,
   answer		text
 );
-
 
 /*user-sent answers to one and multioption questions*/
 CREATE TABLE answers(
   id SERIAL PRIMARY KEY,
+  test_id INTEGER,
   question_id integer NOT NULL,
   user_id     integer NOT NULL,
-  option_id   integer NOT NULL
+  attempt INTEGER,
+  answer   integer NOT NULL
 );
 
-CREATE TABLE matching_answers(
+CREATE TABLE attempts(
   id SERIAL PRIMARY KEY,
-  question_id integer NOT NULL,
-  user_id     integer NOT NULL,
-  key_id      integer NOT NULL,
-  pair_id     integer NOT NULL
+  test_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  last_attempt INTEGER NOT NULL
 );
-
 
 CREATE TABLE users (
   id       SERIAL PRIMARY KEY,

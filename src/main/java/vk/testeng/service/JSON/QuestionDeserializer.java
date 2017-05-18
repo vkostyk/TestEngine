@@ -118,7 +118,7 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
                     case FEW_OPTIONS:
                         abstractAnswer = new FewOptionsAnswer(answers);
                         break;
-                    case ONE_OPTION:
+                    case MATCHING:
                         abstractAnswer = new MatchingAnswer(answers);
                         break;
                     default:

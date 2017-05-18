@@ -1,6 +1,7 @@
 package vk.testeng.service;
 
-import vk.testeng.model.*;
+import vk.testeng.model.Question;
+import vk.testeng.model.Test;
 import vk.testeng.model.answer.*;
 
 import java.sql.Connection;
@@ -8,8 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
 
 
 public class TestManager {
@@ -89,11 +88,14 @@ public class TestManager {
             ArrayList<String> options = new ArrayList<>();
             ArrayList<Integer> optionId = new ArrayList<>();
             ArrayList<Integer> optionPair = new ArrayList<>();
+            long seed = 0;
             while (queryResultSet.next())
             {
                 options.add(queryResultSet.getString("option"));
                 optionId.add(queryResultSet.getInt("id"));
-                optionPair.add(queryResultSet.getInt("pair_id"));
+                int pairId = queryResultSet.getInt("pair_id");
+                optionPair.add(pairId);
+                seed+=pairId;
             }
             ArrayList<String> rightOptions = new ArrayList<>();
 
@@ -122,9 +124,9 @@ public class TestManager {
                 keys.add(i);
             }
 
-            long seed = System.nanoTime();
-            Collections.shuffle(leftOptions, new Random(seed));
-            Collections.shuffle(keys, new Random(seed));
+
+            Shuffle.withSeed(leftOptions, seed);
+            Shuffle.withSeed(keys, seed);
             //leftOptions -> key+8 ->rightOptions;
             for (int i = 0; i<rightOptions.size(); i++)
             {
@@ -325,28 +327,30 @@ public class TestManager {
         ArrayList<Integer> matchingCorrectAnswer = ((MatchingAnswer)question.getCorrectAnswer()).getAnswer();
         ArrayList<String> options = question.getOptions();
         try {
+            ps = c.prepareStatement("SELECT * FROM matching WHERE question_id=? ORDER BY id;");
+            ps.setInt(1, question.getId());
+            ResultSet rs = ps.executeQuery();
             for (int j = 0; j<options.size()/2;j++)
             {
-                ps = c.prepareStatement("SELECT * FROM matching WHERE question_id=? ORDER BY id;");
-                ps.setInt(1, question.getId());
-                ResultSet rs = ps.executeQuery();
                 rs.next();
                 int leftId = rs.getInt("id");
                 rs.next();
                 int rightId = rs.getInt("id");
 
 
-                ps = c.prepareStatement("UPDATE matching SET option=? WHERE question_id=? AND id=?;");
+                ps = c.prepareStatement("UPDATE matching SET option=?, pair_id=? WHERE question_id=? AND id=?;");
                 ps.setString(1, options.get(j));
-                ps.setInt(2, question.getId());
-                ps.setInt(3, leftId);
+                ps.setInt(2, rightId);
+                ps.setInt(3, question.getId());
+                ps.setInt(4, leftId);
 
                 ps.executeUpdate();
 
-                ps = c.prepareStatement("UPDATE matching SET option=? WHERE question_id=? AND id=?;");
-                ps.setInt(2, question.getId());
+                ps = c.prepareStatement("UPDATE matching SET option=?, pair_id=? WHERE question_id=? AND id=?;");
                 ps.setString(1, options.get(matchingCorrectAnswer.get(j)+options.size()/2));
-                ps.setInt(3, rightId);
+                ps.setInt(2, leftId);
+                ps.setInt(3, question.getId());
+                ps.setInt(4, rightId);
 
                 ps.executeUpdate();
             }
@@ -546,6 +550,23 @@ public class TestManager {
             return -1;
         }
     }
+    public Question.AnswerType getQuestionType(int questionId)
+    {
+        Connection c = null;
+        PreparedStatement ps = null;
+        try
+        {
+            c = ConnectionManager.connect();
+            ps = c.prepareStatement("SELECT type FROM questions WHERE id=?;");
+            ps.setInt(1,questionId);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return Question.AnswerType.valueOf(rs.getString("type"));
+
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
     public Question getQuestion(int questionId)
     {
         Connection c = null;
@@ -633,6 +654,85 @@ public class TestManager {
         } else {
             //error
         }
+    }
 
+    public int getLastAttempt(int testId, int userId)
+    {
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs;
+        try
+        {
+            c = ConnectionManager.connect();
+            ps = c.prepareStatement("SELECT last_attempt FROM attempts WHERE test_id=? AND user_id=?;");
+            ps.setInt(1,testId);
+            ps.setInt(2,userId);
+            rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt("last_attempt");
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public void addUserAnswer(int testId, int questionId, int userId, int attempt, AbstractAnswer answer, Question.AnswerType type)
+    {
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs;
+        try {
+            c = ConnectionManager.connect();
+            ArrayList<Integer> answers = null;
+            String userInput = null;
+            switch (type)
+            {
+                case ONE_OPTION:
+                    answers = new ArrayList<>();
+                    answers.add(((OneOptionAnswer)answer).getAnswer());
+                    break;
+                case FEW_OPTIONS:
+                    answers = ((FewOptionsAnswer) answer).getAnswer();
+                   break;
+                case MATCHING:
+                    answers = ((MatchingAnswer) answer).getAnswer();
+                    break;
+                case INPUT:
+                    userInput = ((InputAnswer)answer).getAnswer();
+                    break;
+                case ESSAY:
+                    userInput = ((EssayAnswer)answer).getAnswer();
+                    break;
+                default:
+                    answers = null;
+                    userInput = null;
+            }
+            if (answers==null&&userInput==null)
+            {
+                throw new RuntimeException();
+            }
+            if (answers!=null)
+            {
+                for (int i = 0; i<answers.size(); i++)
+                {
+                    ps = c.prepareStatement("INSERT INTO answers(test_id, question_id, user_id, attempt, answer) VALUES(?,?,?,?,?);");
+                    ps.setInt(1,testId);
+                    ps.setInt(2,questionId);
+                    ps.setInt(3,userId);
+                    ps.setInt(4,attempt);
+                    ps.setInt(5,answers.get(i));
+                    ps.executeUpdate();
+                }
+            } else {
+                ps = c.prepareStatement("INSERT INTO user_inputs(test_id, question_id, user_id, attempt, answer) VALUES(?,?,?,?,?);");
+                ps.setInt(1, testId);
+                ps.setInt(2, questionId);
+                ps.setInt(3, userId);
+                ps.setInt(4, attempt);
+                ps.setString(5, userInput);
+            }
+
+        } catch ( Exception e) {
+
+        }
     }
 }
