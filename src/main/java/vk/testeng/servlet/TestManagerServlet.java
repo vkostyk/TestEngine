@@ -26,9 +26,6 @@ import java.util.ArrayList;
 public class TestManagerServlet  extends HttpServlet {
     private enum Action {ADD, EDIT, GET}
 
-
-
-
     private class IDContainer
     {
         int id;
@@ -58,6 +55,9 @@ public class TestManagerServlet  extends HttpServlet {
                     break;
                 case "editQuestion":
                     processQuestion(request, response, Action.EDIT);
+                    break;
+                case "getQuestion":
+                    processQuestion(request, response, Action.GET);
                     break;
                 case "finishEdition":
                     finishEdition(request, response);
@@ -224,6 +224,7 @@ public class TestManagerServlet  extends HttpServlet {
                         writer.write(ServletSuccess.ID.get(questionId));
                         return;
                     case EDIT:
+
                         testManager.editQuestion(testId, question);
                         writer.write(ServletSuccess.EDIT.get());
                         return;

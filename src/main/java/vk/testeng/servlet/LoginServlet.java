@@ -2,6 +2,8 @@ package vk.testeng.servlet;
 
 import vk.testeng.model.User;
 import vk.testeng.service.UserManager;
+import vk.testeng.servlet.service.ServletError;
+import vk.testeng.servlet.service.ServletSuccess;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -10,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class LoginServlet extends HttpServlet {
     @Override
@@ -33,10 +36,10 @@ public class LoginServlet extends HttpServlet {
                     register(request, response);
                     break;
 
-               /*case "logout":
+               case "logout":
                     logout(request, response);
                     break;
-                */
+
                 default:
                     dispatcher = this.getServletContext().getRequestDispatcher("/WEB-INF/view/404.jsp");
                     dispatcher.forward(request, response);
@@ -44,98 +47,88 @@ public class LoginServlet extends HttpServlet {
 
         }
     }
-    protected void doGet (HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
-    {
-        String action = (String)request.getAttribute("action");
-        if (action=="logout") {logout(request, response);}
-    }
     private void login(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        PrintWriter writer = response.getWriter();
         HttpSession session;
+        session = request.getSession(false);
+        if (session != null && session.getAttribute("currentSessionUser")!=null) {
+            writer.write(ServletError.ALREADY_LOGGED.get());
+            return;
+        }
         if (username==null||password==null||username.length()<5||password.length()<5)
         {
-            request.setAttribute("state", "Wrong credentials, username and password should have at least 5 characters");
-            request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-        } else {
-            User user = new User(username, password);
-            UserManager userManager = new UserManager();
-            UserManager.LoginResult result = userManager.login(user);
-            user.setAccessType(User.AccessType.USER);
-            switch (result.getState()) {
-                case NOSUCHUSER:
-                    request.setAttribute("state", "No such user");
-                    request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-                    break;
-                case WRONGPASSWORD:
-                    request.setAttribute("state", "Wrong password");
-                    request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-                    break;
-                case ISADMIN:
-                    user.setAccessType(User.AccessType.ADMIN);
-                case ISUSER:
-                    session = request.getSession(false);
-                    if (session != null && session.getAttribute("currentSessionUser")!=null) {
-                        request.setAttribute("state", "Logout first");
-                        request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-                    } else {
-                        session = request.getSession(true);
-                        session.setAttribute("currentSessionUser", user);
+            writer.write(ServletError.WRONG_CREDENTIALS.get());
+            return;
+        }
 
-                        request.setAttribute("state", "Successfully logged in");
-                        request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-                    }
-                    break;
+        User user = new User(username, password);
+        UserManager userManager = new UserManager();
+        UserManager.LoginResult result = userManager.login(user);
+        user.setAccessType(User.AccessType.USER);
+        switch (result.getState()) {
+            case NOSUCHUSER:
+                writer.write(ServletError.NO_SUCH_USER.get());
+                break;
+            case WRONGPASSWORD:
+                writer.write(ServletError.WRONG_PASSWORD.get());
+                break;
+            case ISADMIN:
+                user.setAccessType(User.AccessType.ADMIN);
+            case ISUSER:
+                    session = request.getSession(true);
+                    session.setAttribute("currentSessionUser", user);
+                    writer.write(ServletSuccess.LOGGED.get());
+
+                break;
 
             }
-        }
     }
     private void register (HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException
     {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String access = request.getParameter("access");
+        PrintWriter writer = response.getWriter();
         User.AccessType accessType;
-        if ((username==null||password==null||username.length()<5||password.length()<5)) //||!(accessType==User.AccessType.ADMIN||accessType== User.AccessType.USER)
+        if ((username==null||password==null||username.length()<5||password.length()<5))
         {
-            request.setAttribute("state", "Wrong credentials, username and password should have at least 5 characters");
-            request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-        } else {
-            if (access==null||!(access.equals("USER")||access.equals("ADMIN"))) {
-                accessType = User.AccessType.USER;
-            } else {
-                accessType=User.AccessType.valueOf(access);
-            }
-            User user = new User(username, password, accessType);
-            UserManager userManager = new UserManager();
-            UserManager.RegResult result = userManager.register(user);
-            switch (result.getState())
-            {
-                case USEREXISTS:
-                    request.setAttribute("state", "Such user already exists");
-                    request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-                    break;
-                case SUCCESS:
-                    request.setAttribute("state", "Successfully registered");
-                    request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
-                    break;
-            }
+            writer.write(ServletError.WRONG_CREDENTIALS.get());
+            writer.write(username);
+            return;
         }
+        if (access==null||!(access.equals("USER")||access.equals("ADMIN"))) {
+            accessType = User.AccessType.USER;
+        } else {
+            accessType=User.AccessType.valueOf(access);
+        }
+        User user = new User(username, password, accessType);
+        UserManager userManager = new UserManager();
+        UserManager.RegResult result = userManager.register(user);
+        switch (result.getState())
+        {
+            case USEREXISTS:
+                writer.write(ServletError.USER_EXISTS.get());
+                break;
+            case SUCCESS:
+                writer.write(ServletSuccess.REGISTERED.get());
+                break;
+        }
+
     }
     private void logout (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
+        PrintWriter writer = response.getWriter();
         HttpSession session = request.getSession(false);
         if (session!=null && session.getAttribute("currentSessionUser")!=null)
         {
             session.removeAttribute("currentSessionUser");
             session.invalidate();
-            request.setAttribute("state", "Successfully logged out");
-            request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
+            writer.write(ServletSuccess.LOGGED_OUT.get());
         } else {
-            request.setAttribute("state", "Login first in order to be able to logout");
-            request.getRequestDispatcher("/WEB-INF/view/accountAction.jsp").forward(request, response);
+            writer.write(ServletError.NOT_LOGGED.get());
         }
     }
 }

@@ -1,11 +1,11 @@
 package vk.testeng.service.JSON;
 
 import com.google.gson.*;
+import vk.testeng.model.Question;
 import vk.testeng.model.answer.FewOptionsAnswer;
+import vk.testeng.model.answer.InputAnswer;
 import vk.testeng.model.answer.MatchingAnswer;
 import vk.testeng.model.answer.OneOptionAnswer;
-import vk.testeng.model.Question;
-
 
 import java.lang.reflect.Type;
 
@@ -52,6 +52,9 @@ public class QuestionSerializer implements JsonSerializer<Question> {
                 {
                     answers.add(new JsonPrimitive(answer));
                 }
+                break;
+            case INPUT:
+                result.addProperty("answer", ((InputAnswer)(question.getCorrectAnswer())).getAnswer());
                 break;
         }
         return result;

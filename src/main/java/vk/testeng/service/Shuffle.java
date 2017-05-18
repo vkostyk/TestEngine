@@ -10,7 +10,6 @@ public class Shuffle {
         for (int i = array.size() - 1; i > 0; i--)
         {
             int index = rnd.nextInt(i + 1);
-            // Simple swap
             T a = array.get(index);
             array.set(index, array.get(i));
             array.set(i, a);

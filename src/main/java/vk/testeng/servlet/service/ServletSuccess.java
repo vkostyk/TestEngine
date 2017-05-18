@@ -11,7 +11,10 @@ public enum ServletSuccess
     },
     EDIT("Edit successful"),
     FINISH_EDIT("Edition session finished successfully"),
-    QUIZ_FINISHED("Quiz successfully finished");
+    QUIZ_FINISHED("Quiz successfully finished"),
+    LOGGED("Successfully logged in"),
+    LOGGED_OUT("Successfully logged out"),
+    REGISTERED("Successfully registered");
     private static final String ID_LEFT = "{\"id\":";
     private static final String ID_RIGHT = "}";
     private static final String LEFT = "{\"success\":\"";

@@ -1,4 +1,4 @@
-CREATE USER testeng WITH password 'qwerty';
+CREATE USER testeng WITH password 'queantes';
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO testeng;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO testeng;

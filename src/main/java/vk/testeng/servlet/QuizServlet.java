@@ -111,7 +111,7 @@ public class QuizServlet extends HttpServlet {
         session.setAttribute("currentTestId", testId);
         TestManager testManager = new TestManager();
 
-
+        testManager.newAttempt(testId, user.getId());
         Type idsListType = new TypeToken<ArrayList<Integer>>(){}.getType();
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(idsListType,  new QuestionIdsSerializer())

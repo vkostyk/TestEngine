@@ -1,10 +1,8 @@
 package vk.testeng.service.JSON;
+
 import com.google.gson.*;
-import vk.testeng.model.*;
-import vk.testeng.model.answer.AbstractAnswer;
-import vk.testeng.model.answer.FewOptionsAnswer;
-import vk.testeng.model.answer.MatchingAnswer;
-import vk.testeng.model.answer.OneOptionAnswer;
+import vk.testeng.model.Question;
+import vk.testeng.model.answer.*;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -125,6 +123,16 @@ public class QuestionDeserializer implements JsonDeserializer<Question> {
                         throw new JsonParseException(JSONError.TYPE.name());
                 }
                 break;
+            case INPUT:
+                if (jsonObject.get("answer")==null)
+                {
+                    throw new JsonParseException(JSONError.ANSWER.name());
+                }
+                try {
+                    abstractAnswer = new InputAnswer(jsonObject.get("answer").getAsString());
+                } catch(ClassCastException|IllegalStateException e) {
+                    throw new JsonParseException(JSONError.ANSWER.name());
+                }
             default:
                 throw new JsonParseException(JSONError.TYPE.name());
         }

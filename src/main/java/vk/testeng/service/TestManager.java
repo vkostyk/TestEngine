@@ -88,14 +88,13 @@ public class TestManager {
             ArrayList<String> options = new ArrayList<>();
             ArrayList<Integer> optionId = new ArrayList<>();
             ArrayList<Integer> optionPair = new ArrayList<>();
-            long seed = 0;
+
             while (queryResultSet.next())
             {
                 options.add(queryResultSet.getString("option"));
                 optionId.add(queryResultSet.getInt("id"));
                 int pairId = queryResultSet.getInt("pair_id");
                 optionPair.add(pairId);
-                seed+=pairId;
             }
             ArrayList<String> rightOptions = new ArrayList<>();
 
@@ -124,7 +123,7 @@ public class TestManager {
                 keys.add(i);
             }
 
-
+            long seed = questionId*leftOptions.size();
             Shuffle.withSeed(leftOptions, seed);
             Shuffle.withSeed(keys, seed);
             //leftOptions -> key+8 ->rightOptions;
@@ -395,7 +394,7 @@ public class TestManager {
 
             stmt = c.createStatement();
 
-            ResultSet rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+testId+" ORDER BY id;");
+            ResultSet rs = stmt.executeQuery("SELECT question_id FROM test_map WHERE test_id="+testId+" ORDER BY id;");
             while (rs.next())
             {
                 questionIds.add(rs.getInt("id"));
@@ -464,12 +463,13 @@ public class TestManager {
             test.setMaxPoints(rs.getInt("points"));
             test.setName(rs.getString("name"));
             test.setDescription(rs.getString("description"));
-            rs = stmt.executeQuery("SELECT id FROM questions WHERE test_id="+id+" ORDER BY id;");
+
+            rs = stmt.executeQuery("SELECT question_id FROM test_map WHERE test_id="+id+" ORDER BY id;");
 
             while (rs.next())
             {
                 Question question;
-                int questionId = rs.getInt("id");
+                int questionId = rs.getInt("question_id");
                 question = getQuestion(questionId);
                 test.addQuestion(question);
             }
@@ -482,20 +482,24 @@ public class TestManager {
             System.err.println( e.getClass().getName()+": "+ e.getMessage() );
             System.exit(0);
         }
-        System.out.println("Operation done successfully");
+
         return test;
     }
     public int addTest(Test test)
     {
         Connection c = null;
+        PreparedStatement ps = null;
         Statement stmt = null;
         try {
             //c.setAutoCommit(false);
             c = ConnectionManager.connect();
-            System.out.println("Opened database successfully");
             stmt = c.createStatement();
             ResultSet rs;
-            rs = stmt.executeQuery("INSERT INTO tests(name, description, points) VALUES('"+test.getName()+"' ,'"+test.getDescription()+"', "+ test.getMaxPoints()+") RETURNING id;");
+            ps = c.prepareStatement("INSERT INTO tests(name, description, points) VALUES(?,?,?) RETURNING id;");
+            ps.setString(1, test.getName());
+            ps.setString(2, test.getDescription());
+            ps.setInt(3, test.getMaxPoints());
+            rs = ps.executeQuery();
             rs.next();
             int testId = rs.getInt("id");
             for (int i = 0; i<test.getQuestionsCount(); i++)
@@ -518,15 +522,22 @@ public class TestManager {
         Question.AnswerType questionType = question.getType();
         Connection c = null;
         Statement stmt = null;
+        PreparedStatement ps = null;
 
         try {
             c = ConnectionManager.connect();
-            stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery("INSERT INTO questions(test_id, task, type, max_points) VALUES(" + testId + ", '" + question.getTask() + "', '" + questionType.name() + "', " + question.getMaxPoints() + ") RETURNING id;");
+            ps = c.prepareStatement("INSERT INTO questions(task, type, max_points) VALUES(?,?,?) RETURNING id;");
+            ps.setString(1,question.getTask());
+            ps.setString(2,questionType.name());
+            ps.setInt(3,question.getMaxPoints());
+            ResultSet rs = ps.executeQuery();
             rs.next();
             int questionId = rs.getInt("id");
-            //PreparedStatement ps;
-            //ArrayList<String> options = question.getOptions();
+            ps = c.prepareStatement("INSERT INTO test_map(test_id, question_id) VALUES(?,?);");
+            ps.setInt(1,testId);
+            ps.setInt(2,questionId);
+            ps.executeUpdate();
+
             switch (questionType) {
                 case ONE_OPTION:
                     addOneOption(questionId, c, question);
@@ -670,6 +681,37 @@ public class TestManager {
             rs = ps.executeQuery();
             rs.next();
             return rs.getInt("last_attempt");
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+    public void newAttempt(int testId, int userId)
+    {
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs;
+        try
+        {
+            int lastAttempt;
+            c = ConnectionManager.connect();
+            ps = c.prepareStatement("SELECT last_attempt FROM attempts WHERE test_id=? AND user_id=?;");
+            ps.setInt(1,testId);
+            ps.setInt(2,userId);
+            rs = ps.executeQuery();
+            if (rs.next())
+            {
+                lastAttempt = rs.getInt("last_attempt")+1;
+                ps = c.prepareStatement("UPDATE attempts SET last_attempt=? WHERE test_id=? AND user_id=?;");
+                ps.setInt(1,lastAttempt);
+                ps.setInt(2,testId);
+                ps.setInt(3,userId);
+            } else {
+                ps = c.prepareStatement("INSERT INTO attempts(test_id, user_id, last_attempt) VALUES(?,?,?);");
+                ps.setInt(1,testId);
+                ps.setInt(2,userId);
+                ps.setInt(3,0);
+                ps.executeUpdate();
+            }
         } catch (Exception e) {
             throw new RuntimeException();
         }

@@ -2,7 +2,11 @@ package vk.testeng.servlet.service;
 
     public enum ServletError
     {
-
+        WRONG_CREDENTIALS("Wrong credentials, username and password should have at least 5 characters"),
+        NO_SUCH_USER("No such user"),
+        WRONG_PASSWORD("Wrong password"),
+        ALREADY_LOGGED("You are already logged in"),
+        USER_EXISTS("Such user already exists"),
         NO_ACTION_SET("No action set"),
         WRONG_ACTION_PARAMETER("Wrong action parameter"),
         USER_NOT_ADMIN("Only admin can manage tests"),
