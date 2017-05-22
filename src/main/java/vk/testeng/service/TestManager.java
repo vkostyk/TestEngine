@@ -407,6 +407,11 @@ public class TestManager {
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName()+": "+ e.getMessage() );
             System.exit(0);
+        }finally {
+            if (stmt != null) {
+                try {stmt.close();}
+                catch (Exception e) {}
+            }
         }
         return questionIds;
     }
@@ -440,6 +445,11 @@ public class TestManager {
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName()+": "+ e.getMessage() );
             System.exit(0);
+        }finally {
+            if (stmt != null) {
+                try {stmt.close();}
+                catch (Exception e) {}
+            }
         }
         return tests;
     }
@@ -481,6 +491,11 @@ public class TestManager {
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName()+": "+ e.getMessage() );
             System.exit(0);
+        }  finally {
+            if (stmt != null) {
+                try {stmt.close();}
+                catch (Exception e) {}
+            }
         }
 
         return test;
@@ -489,11 +504,10 @@ public class TestManager {
     {
         Connection c = null;
         PreparedStatement ps = null;
-        Statement stmt = null;
         try {
             //c.setAutoCommit(false);
             c = ConnectionManager.connect();
-            stmt = c.createStatement();
+
             ResultSet rs;
             ps = c.prepareStatement("INSERT INTO tests(name, description, points) VALUES(?,?,?) RETURNING id;");
             ps.setString(1, test.getName());
@@ -507,21 +521,22 @@ public class TestManager {
                 Question question = test.getQuestion(i);
                 addQuestion(testId, question);
             }
-            stmt.close();
-            //c.commit();
+
             c.close();
             return testId;
         } catch (Exception e) {
-            System.err.println( e.getClass().getName()+": "+ e.getMessage() );
-            System.exit(0);
             return -1;
+        } finally {
+        if (ps != null) {
+            try {ps.close();}
+            catch (Exception e) {}
         }
+    }
     }
     public int addQuestion(int testId, Question question)
     {
         Question.AnswerType questionType = question.getType();
         Connection c = null;
-        Statement stmt = null;
         PreparedStatement ps = null;
 
         try {
@@ -559,6 +574,11 @@ public class TestManager {
         } catch (Exception e)
         {
             return -1;
+        }finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
         }
     }
     public Question.AnswerType getQuestionType(int questionId)
@@ -575,7 +595,13 @@ public class TestManager {
             return Question.AnswerType.valueOf(rs.getString("type"));
 
         } catch (Exception e) {
-            throw new RuntimeException();
+            return null;
+        } finally {
+
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
         }
     }
     public Question getQuestion(int questionId)
@@ -622,6 +648,11 @@ public class TestManager {
         } catch (Exception e)
         {
             return null;
+        } finally {
+            if (stmt != null) {
+                try {stmt.close();}
+                catch (Exception e) {}
+            }
         }
     }
 
@@ -661,9 +692,14 @@ public class TestManager {
 
             } catch (Exception e) {
 
+            } finally {
+                if (stmt != null) {
+                    try {stmt.close();}
+                    catch (Exception e) {}
+                }
             }
         } else {
-            //error
+            throw new RuntimeException();
         }
     }
 
@@ -683,6 +719,11 @@ public class TestManager {
             return rs.getInt("last_attempt");
         } catch (Exception e) {
             throw new RuntimeException();
+        }finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
         }
     }
     public void newAttempt(int testId, int userId)
@@ -714,6 +755,11 @@ public class TestManager {
             }
         } catch (Exception e) {
             throw new RuntimeException();
+        }finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
         }
     }
 
@@ -775,6 +821,11 @@ public class TestManager {
 
         } catch ( Exception e) {
 
+        } finally {
+            if (ps != null) {
+                try {ps.close();}
+                catch (Exception e) {}
+            }
         }
     }
 }

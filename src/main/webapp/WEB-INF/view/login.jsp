@@ -7,13 +7,16 @@
             .flex-container{
                 padding: 70px 0;
                 margin:auto;
-                display: none;
+                display: flex;
                 justify-content: space-between;
                 width: 400px;
                 flex-flow: row wrap;
             }
             .element {
                 width: 200px;
+            }
+            .big {
+                width: 400px;
             }
         </style>
         <script>
@@ -34,6 +37,19 @@
                     alert( "Error" );
                 });
             }
+            function comment(data)
+            {
+                var obj = jQuery.parseJSON(data);
+                if (data===null)
+                {
+                    $("#comment").text("null");
+                }
+                if (obj.error!==null){
+                    $("#comment").text(obj.error);}
+                if (obj.success!==null) {
+                    $("#comment").text(obj.success);
+                }
+            }
             function doLogin()
             {
                 var username =  $("#username").val();
@@ -44,7 +60,8 @@
                             password: password
                         },
                         function( data ) {
-                            alert( data );
+                            var obj = jQuery.parseJSON(data);
+                            comment(obj);
                         }).fail(function() {
                     alert( "Error" );
                 });
@@ -61,11 +78,11 @@
                     action: "register",
                     username: username,
                     password: password,
-                    access: "USER",
-
+                    access: "USER"
                 },
                         function( data ) {
-                            alert( data );
+                            var obj = jQuery.parseJSON(data);
+                            comment(obj);
                         }).fail(function() {
                     alert( "Error" );
                 });
@@ -79,11 +96,11 @@
                 $("#registerButton")
                         .unbind("click", changeToRegister)
                         .attr("type", "password")
-                        .text("");
+                        .attr("value", "");
                 $("#loginButton")
                         .unbind("click", doLogin)
                         .bind("click", doRegister)
-                        .text("Retype password and submit");
+                    .attr("value","Retype password and submit");
             }
             function logout()
             {
@@ -91,7 +108,8 @@
                             action: "logout",
                         },
                         function( data ) {
-                            alert( data );
+
+                            comment(data);
                         }).fail(function() {
                     alert( "Error" );
                 });
@@ -99,8 +117,8 @@
         </script>
     </head>
     <body>
-    <a href="javascript:logout()" id="logout" style="display:none">logout</a>
-
+    <a href="javascript:logout()" id="logout">logout</a>
+<form>
     <div class="flex-container" id="main">
 
         <input type="text" value="username" id="username" name="username" class="element">
@@ -108,16 +126,16 @@
 
         <input type="button" value="Login" id="loginButton" class="element">
         <input type="button" value="Register new" id="registerButton" class="element">
+        <div id="comment" class="big"></div>
 
     </div>
-
+</form>
     <script>
-
+    $(document).ready(function(){
         $("#loginButton").bind("click", doLogin);
         $("#registerButton").bind("click", changeToRegister);
-        $(document).ready(function(){
-            displayIfLogged();
-        });
-    </script>
+
+    });
+        </script>
     </body>
 </html>

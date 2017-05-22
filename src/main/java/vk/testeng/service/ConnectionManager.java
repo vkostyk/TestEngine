@@ -1,6 +1,7 @@
 package vk.testeng.service;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -16,7 +17,7 @@ public class ConnectionManager {
     {
         c = null;
         try {
-            Path file = Paths.get("C:/Users/vkostyk/Desktop/4/TestEngine/DB.cre");
+            Path file = Paths.get("C:/Users/VAIO/IdeaProjects/TestEngine/src/main/webapp/DB.cre");
             String line = null;
             ArrayList<String> data = new ArrayList<String>();
             try (InputStream in = Files.newInputStream(file);

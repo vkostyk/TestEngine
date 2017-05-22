@@ -9,6 +9,7 @@ import vk.testeng.model.Test;
 import vk.testeng.model.User;
 import vk.testeng.service.JSON.*;
 import vk.testeng.service.TestManager;
+import vk.testeng.servlet.actions.ActionFactory;
 import vk.testeng.servlet.service.ServletError;
 import vk.testeng.servlet.service.ServletSuccess;
 
@@ -42,6 +43,8 @@ public class TestManagerServlet  extends HttpServlet {
         {
             response.getWriter().write(ServletError.NO_ACTION_SET.get());
         } else {
+            ActionFactory.getAction(action).execute(request, response);
+            /*
             switch (action)
             {
                 case "getTestsInfo":
@@ -65,67 +68,12 @@ public class TestManagerServlet  extends HttpServlet {
                 default:
                     response.getWriter().write(ServletError.WRONG_ACTION_PARAMETER.get());
             }
+            */
         }
-    }
-    private void getTests(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-        HttpSession session = request.getSession(false);
-        PrintWriter writer = response.getWriter();
-        if (session==null || session.getAttribute("currentSessionUser")==null)
-        {
-            writer.write(ServletError.NOT_LOGGED.get());
-            return;
-        }
-        User user = (User)session.getAttribute("currentSessionUser");
-        if (user.getAccessType()!= User.AccessType.ADMIN)
-        {
-            writer.write(ServletError.USER_NOT_ADMIN.get());
-            return;
-        }
-        TestManager testManager = new TestManager();
-
-        Type testListType = new TypeToken<ArrayList<Test>>(){}.getType();
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Test.class,  new TestInfoSerializer())
-                .registerTypeAdapter(testListType, new TestInfoArraySerializer())
-                .setPrettyPrinting()
-                .create();
-        String json = gson.toJson(testManager.getTestsInfo());
-        writer.write(json);
     }
     private void initEdition(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        HttpSession session = request.getSession(false);
-        PrintWriter writer = response.getWriter();
-        if (session==null || session.getAttribute("currentSessionUser")==null)
-        {
-            writer.write(ServletError.NOT_LOGGED.get());
-            return;
-        }
-        User user = (User)session.getAttribute("currentSessionUser");
-        if (user.getAccessType()!= User.AccessType.ADMIN)
-        {
-            writer.write(ServletError.USER_NOT_ADMIN.get());
-            return;
-        }
-        String maxPointsS = request.getParameter("points");
-        if (maxPointsS==null||!maxPointsS.matches("\\d+"))
-        {
-            writer.write(ServletError.NO_MAX_POINTS.get());
-            return;
-        }
-        if (session.getAttribute("currentTestId")!=null)
-        {
-            writer.write(ServletError.EDIT_SESSION_ALIVE.get());
-            return;
-        }
-        int maxPoints = Integer.parseInt(maxPointsS);
-        Test test = new Test();
-        test.setMaxPoints(maxPoints);
-        TestManager testManager = new TestManager();
-        int testId = testManager.addTest(test);
-        session.setAttribute("currentTestId", testId);
-        writer.write(ServletSuccess.ID.get(testId));
+
     }
 
     private void finishEdition(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -190,8 +138,7 @@ public class TestManagerServlet  extends HttpServlet {
                     question = gson.fromJson(json, Question.class);
                 } catch (JsonSyntaxException e) {
                     JSONError error = JSONError.valueOf(e.getMessage());
-                    switch (error)
-                    {
+                    switch (error) {
                         case QUESTION:
                             writer.write(ServletError.JSON_FORMAT.get());
                             break;

@@ -1,25 +1,11 @@
 <component name="ArtifactManager">
   <artifact type="war" name="Gradle : vk.testeng : TestEngine-1.0.war">
-    <output-path>$PROJECT_DIR$/classes/artifacts/TestEngine</output-path>
+    <output-path>$PROJECT_DIR$/build/libs</output-path>
     <properties id="gradle-properties">
       <options external-project-path="$PROJECT_DIR$" />
     </properties>
     <root id="archive" name="TestEngine-1.0.war">
-      <element id="javaee-facet-resources" facet="TestEngine_main/web/Web Gradle : TestEngine-1.0.war" />
-      <element id="directory" name="WEB-INF">
-        <element id="directory" name="classes">
-          <element id="module-output" name="TestEngine_main" />
-          <element id="dir-copy" path="$PROJECT_DIR$/build/resources/main" />
-        </element>
-        <element id="directory" name="lib">
-          <element id="file-copy" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.8.0/c4ba5371a29ac9b2ad6129b1d39ea38750043eff/gson-2.8.0.jar" />
-          <element id="file-copy" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/javax.servlet/javax.servlet-api/3.0.1/6bf0ebb7efd993e222fc1112377b5e92a13b38dd/javax.servlet-api-3.0.1.jar" />
-          <element id="file-copy" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/javax.servlet/jstl/1.2/74aca283cd4f4b4f3e425f5820cda58f44409547/jstl-1.2.jar" />
-        </element>
-      </element>
-      <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/classes/artifacts/TestEngine/exploded/TestEngine-1.0.war/META-INF/MANIFEST.MF" />
-      </element>
+      <element id="artifact" artifact-name="Gradle : vk.testeng : TestEngine-1.0.war (exploded)" />
     </root>
   </artifact>
 </component>
